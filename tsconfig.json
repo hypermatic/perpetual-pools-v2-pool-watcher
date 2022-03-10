@@ -1,0 +1,36 @@
+{
+  "compilerOptions": {
+    "listEmittedFiles": false,
+    "outDir": "dist",
+    "declaration": true,
+    "declarationDir": "dist",
+    "target": "es5",
+    // "module": "esnext",
+    "lib": ["es6", "dom", "es7", "es2017"],
+    "moduleResolution": "node",
+    "strict": true,
+    "esModuleInterop": false,
+    "noImplicitAny": true,
+    "skipLibCheck": true,
+    "noImplicitThis": true,
+    "removeComments": false,
+    "resolveJsonModule": true,
+    "suppressImplicitAnyIndexErrors": true,
+    // "sourceMap": true,
+    "pretty": true,
+    "allowJs": true,
+  },
+  "include": [
+    "./src/**/*"
+  ],
+  "exclude": [
+    "./node_modules/**/*",
+    "./dist/**/*",
+  ],
+  "typedocOptions": {
+    "entryPoints": ["src/index.ts"],
+    "entryPointStrategy": "expand",
+    "out": "docs"
+  }
+
+}

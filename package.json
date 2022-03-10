@@ -1,0 +1,43 @@
+{
+  "name": "@tracer-protocol/perpetual-pools-v2-pool-watcher",
+  "version": "0.0.1",
+  "description": "tracer perpetual pool watcher that can act as a building block for various types of bots",
+  "main": "index.js",
+  "typings": "index.d.ts",
+  "files": [
+    "*"
+  ],
+  "repository": "",
+  "author": "Rogueibis",
+  "license": "MIT",
+  "private": false,
+  "devDependencies": {
+    "@babel/core": "^7.17.5",
+    "@babel/preset-env": "^7.14.7",
+    "@babel/preset-typescript": "^7.14.5",
+    "@types/node-fetch": "^2.5.11",
+    "@typescript-eslint/eslint-plugin": "^4.28.2",
+    "@typescript-eslint/parser": "^5.14.0",
+    "eslint": "^7.30.0",
+    "eslint-plugin-import": "^2.23.4",
+    "eslint-plugin-node": "^11.1.0",
+    "eslint-plugin-promise": "^5.1.0",
+    "rimraf": "^3.0.2",
+    "ts-node": "^10.0.0",
+    "ts-node-dev": "^1.1.8",
+    "typescript": "^4.3.5"
+  },
+  "dependencies": {
+    "@tracer-protocol/pools-js": "^2.0.3",
+    "dotenv": "^10.0.0",
+    "eslint-config-standard-with-typescript": "^20.0.0",
+    "ethers": "5.5.1",
+    "node-fetch": "^2.6.1",
+    "tiny-typed-emitter": "^2.1.0"
+  },
+  "scripts": {
+    "tsc": "tsc",
+    "build": "rimraf dist && tsc",
+    "lint": "eslint --ext .ts,.js ."
+  }
+}
