@@ -177,7 +177,9 @@ export class PoolWatcher extends TypedEmitter<PoolWatcherEvents> {
   }
 
   async isCommitmentWindowStillOpen (updateIntervalId: number) {
-    if (this.watchedPool.address) {
+    console.log('CHECKING IS COMMITMENT WINDOW OPEN', this);
+
+    if (!this.watchedPool.address) {
       throw new Error('isCommitmentWindowStillOpen: watched pool not initialised');
     }
 
@@ -322,8 +324,6 @@ export class PoolWatcher extends TypedEmitter<PoolWatcherEvents> {
     const upkeepSuccessfulFilter = this.watchedPool.keeperInstance.filters.UpkeepSuccessful(this.poolAddress);
 
     const scheduleStateCalculation = async () => {
-      console.log('scheduling state calculation');
-
       const [
         lastPriceTimestampEthersBN,
         appropriateIntervalIdBefore
@@ -331,8 +331,6 @@ export class PoolWatcher extends TypedEmitter<PoolWatcherEvents> {
         attemptPromiseRecursively({ promise: () => this.poolInstance.lastPriceTimestamp() }),
         attemptPromiseRecursively({ promise: () => this.watchedPool.committerInstance.getAppropriateUpdateIntervalId() })
       ]);
-
-      console.log(`appropriate interval id before sleeping is ${appropriateIntervalIdBefore.toNumber()}`);
 
       const { frontRunningInterval, updateInterval } = this.watchedPool as WatchedPool;
 
@@ -348,29 +346,16 @@ export class PoolWatcher extends TypedEmitter<PoolWatcherEvents> {
 
       const nowSeconds = Math.floor(Date.now() / 1000);
 
-      console.log(`last price was at ${lastPriceTimestamp} (${nowSeconds - lastPriceTimestamp} seconds ago)`);
-      console.log(`commitment window ends in at ${commitmentWindowEnd} (${commitmentWindowEnd - nowSeconds} seconds from now)`);
-      console.log(`waiting for ${waitUntil - nowSeconds} seconds to calculate state`);
-
       // if we are already past the start of the acceptable commitment window end
       // do nothing and wait until next upkeep to schedule anything
       if (nowSeconds > waitUntil) {
-        console.log(`${nowSeconds} is already past waitUntil of ${waitUntil}, waiting for upkeep`);
         this.watchedPool.keeperInstance.once(upkeepSuccessfulFilter, () => {
-          console.log('[1] got the upkeep, scheduling next state calculation');
-
           scheduleStateCalculation();
-          // get seconds until commitment window closes (minus a buffer)
-          // set a timeout to wake up, check if appropriateUpdateInterval is still the
         });
       } else {
         // set time out for waitUntil - nowSeconds
-        // wake up and check if lastUpdateIntervalId is same as new
-        console.log(`setting timeout for ${(waitUntil - nowSeconds) * 1000} to wake up and calculate state`);
-
+        // wake up and check if we are still inside of the same commitment window
         setTimeout(async () => {
-          console.log('woke up from timeout, checking for valid update interval id');
-
           const commitmentWindowOpenPreStateCalc = await this.isCommitmentWindowStillOpen(
             appropriateIntervalIdBefore.toNumber()
           );
@@ -378,25 +363,14 @@ export class PoolWatcher extends TypedEmitter<PoolWatcherEvents> {
           // if the appropriate update interval id is still the same as before we slept,
           // we are still within the acceptable commitment window
           if (commitmentWindowOpenPreStateCalc) {
-            console.log('interval id still valid, calculating state');
-
             const calculatedState = await this.calculateState();
 
-            console.log(`performing final interval id check ${calculatedState.appropriateUpdateIntervalId}`);
-
             if (appropriateIntervalIdBefore.eq(calculatedState.appropriateUpdateIntervalId)) {
-              console.log('final interval check passed, emitting calculated state');
               this.emit(EVENT_NAMES.COMMITMENT_WINDOW_ENDING, calculatedState);
-            } else {
-              console.log('final check interval id no longer valid, waiting for next upkeep');
             }
-          } else {
-            console.log('first awaken interval id no longer valid, waiting for next upkeep');
           }
 
           this.watchedPool.keeperInstance.once(upkeepSuccessfulFilter, () => {
-            console.log('[2] got the upkeep, scheduling next state calculation');
-
             scheduleStateCalculation();
           });
         }, (waitUntil - nowSeconds) * 1000);
