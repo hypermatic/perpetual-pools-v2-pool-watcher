@@ -125,7 +125,7 @@ export class PoolWatcher extends TypedEmitter<PoolWatcherEvents> {
    * @returns
    */
   async getRelevantPendingCommits (): Promise<TotalPoolCommitments[]> {
-    if (this.watchedPool.address) {
+    if (!this.watchedPool.address) {
       throw new Error('getRelevantPendingCommits: watched pool not initialised');
     }
 
@@ -191,7 +191,7 @@ export class PoolWatcher extends TypedEmitter<PoolWatcherEvents> {
   }
 
   async calculateState (): Promise<CalculatedPoolState> {
-    if (this.watchedPool.address) {
+    if (!this.watchedPool.address) {
       throw new Error('calculateState: watched pool not initialised');
     }
 
