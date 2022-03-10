@@ -1,6 +1,6 @@
 # Perpetual Pools v2 Pool Watcher
 
-The Pool Watcher is a building block that can be used to create various types of bots that interact with Tracer Perpetual Pool v2
+The Pool Watcher is a building block that can be used to create various types of bots that interact with Tracer Perpetual Pools v2
 
 **This package is for use with perpetual pools v2 which is currently not deployed to mainnet**
 
@@ -22,7 +22,7 @@ yarn add @tracer-protocol/perpetual-pools-v2-pool-watcher
 Start watching a pool and reacting to events
 
 ``` javascript
-import { PoolWatcher } from '../src/PoolWatcher';
+import { PoolWatcher } from '@tracer-protocol/perpetual-pools-v2-pool-watcher';
 
 async function main () {
   const poolWatcher = new PoolWatcher({
