@@ -9,15 +9,15 @@ export const attemptPromiseRecursively = async <T>({
   interval = 1000
 }: {
   promise: () => Promise<T>,
-  retryCheck?: () => Promise<boolean>,
+  retryCheck?: (error: any) => Promise<boolean>,
   interval?: number
 }): Promise<T> => {
   try {
     return await promise();
-  } catch (error) {
+  } catch (error: any) {
     await new Promise(resolve => setTimeout(resolve, interval));
 
-    if (!retryCheck || (retryCheck && await retryCheck())) {
+    if (!retryCheck || (retryCheck && await retryCheck(error))) {
       return attemptPromiseRecursively({ promise, retryCheck, interval });
     } else {
       return undefined as unknown as T;
@@ -31,4 +31,8 @@ export const ethersBNtoBN = (ethersBN: ethers.BigNumber): BigNumber => {
 
 export const poolSwapLibraryAddresses: Record<string, string> = {
   421611: '0x8e761005bAFB81CEde15366158B1F769a411dDfc'
+};
+
+export const movingAveragePriceTransformer = (lastPrice: BigNumber, currentPrice: BigNumber) => {
+  return lastPrice.plus(currentPrice).div(2);
 };

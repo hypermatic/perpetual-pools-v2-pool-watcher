@@ -17,7 +17,8 @@ import {
 import {
   poolSwapLibraryAddresses,
   attemptPromiseRecursively,
-  ethersBNtoBN
+  ethersBNtoBN,
+  movingAveragePriceTransformer
 } from './utils';
 
 import {
@@ -54,6 +55,7 @@ export class PoolWatcher extends TypedEmitter<PoolWatcherEvents> {
   chainId: string
   commitmentWindowBuffer: number
   isWatching: boolean
+  oraclePriceTransformer: (lastPrice: BigNumber, currentPrice: BigNumber) => BigNumber
 
   constructor (args: PoolWatcherConstructorArgs) {
     super();
@@ -70,6 +72,7 @@ export class PoolWatcher extends TypedEmitter<PoolWatcherEvents> {
     this.watchedPool = {} as WatchedPool;
     this.commitmentWindowBuffer = args.commitmentWindowBuffer;
     this.isWatching = false;
+    this.oraclePriceTransformer = args.oraclePriceTransformer || movingAveragePriceTransformer;
   }
 
   // fetches details about pool to watch and
@@ -133,13 +136,12 @@ export class PoolWatcher extends TypedEmitter<PoolWatcherEvents> {
 
     if (frontRunningInterval < updateInterval) {
       // simple case, commits will be executed either in next upkeep or one after if committed within the front running interval
-      const [pendingCommitsThisInterval, pendingCommitsNextInterval] = await attemptPromiseRecursively({
+      const [pendingCommitsThisInterval] = await attemptPromiseRecursively({
         promise: () => committerInstance.getPendingCommits()
       });
 
       return [
-        pendingCommitsThisInterval,
-        pendingCommitsNextInterval
+        pendingCommitsThisInterval
       ];
     }
 
@@ -177,8 +179,6 @@ export class PoolWatcher extends TypedEmitter<PoolWatcherEvents> {
   }
 
   async isCommitmentWindowStillOpen (updateIntervalId: number) {
-    console.log('CHECKING IS COMMITMENT WINDOW OPEN', this);
-
     if (!this.watchedPool.address) {
       throw new Error('isCommitmentWindowStillOpen: watched pool not initialised');
     }
@@ -227,6 +227,9 @@ export class PoolWatcher extends TypedEmitter<PoolWatcherEvents> {
     let expectedLongTokenPrice = expectedLongBalance.div(expectedLongSupply);
     let expectedShortTokenPrice = expectedShortBalance.div(expectedShortSupply);
 
+    let movingOraclePriceBefore = ethersBNtoBN(lastOraclePrice);
+    let movingOraclePriceAfter = this.oraclePriceTransformer(movingOraclePriceBefore, ethersBNtoBN(currentOraclePrice));
+
     for (const pendingCommit of pendingCommits) {
       const {
         longBurnAmount,
@@ -238,12 +241,16 @@ export class PoolWatcher extends TypedEmitter<PoolWatcherEvents> {
       } = this.pendingCommitsToBN(pendingCommit);
 
       const { longValueTransfer, shortValueTransfer } = calcNextValueTransfer(
-        ethersBNtoBN(lastOraclePrice),
-        ethersBNtoBN(currentOraclePrice), // TODO, emulate SMA using current oracle price
+        movingOraclePriceBefore,
+        movingOraclePriceAfter,
         new BigNumber(leverage),
         longBalance,
         shortBalance
       );
+
+      // apply price transformations to emulate underlying oracle wrapper implementation
+      movingOraclePriceBefore = movingOraclePriceAfter;
+      movingOraclePriceAfter = this.oraclePriceTransformer(movingOraclePriceBefore, ethersBNtoBN(currentOraclePrice));
 
       // balances immediately before commits executed
       const _expectedLongBalance = expectedLongBalance.plus(longValueTransfer);
@@ -306,7 +313,9 @@ export class PoolWatcher extends TypedEmitter<PoolWatcherEvents> {
       totalNetPendingLong,
       totalNetPendingShort,
       expectedLongTokenPrice,
-      expectedShortTokenPrice
+      expectedShortTokenPrice,
+      lastOraclePrice: ethersBNtoBN(lastOraclePrice),
+      expectedOraclePrice: movingOraclePriceAfter
     };
   }
 

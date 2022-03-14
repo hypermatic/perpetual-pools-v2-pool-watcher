@@ -30,6 +30,7 @@ export type PoolWatcherConstructorArgs = {
   poolAddress: string
   chainId: string
   commitmentWindowBuffer: number
+  oraclePriceTransformer?: (lastPrice: BigNumber, currentPrice: BigNumber) => BigNumber
 }
 
 export type WatchedPool = {
@@ -65,6 +66,8 @@ export type CalculatedPoolState = {
   totalNetPendingShort: BigNumber,
   expectedLongTokenPrice: BigNumber,
   expectedShortTokenPrice: BigNumber,
+  lastOraclePrice: BigNumber,
+  expectedOraclePrice: BigNumber,
 }
 
 export type TotalPoolCommitments = [
