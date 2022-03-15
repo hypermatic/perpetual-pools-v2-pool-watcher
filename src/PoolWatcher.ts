@@ -61,7 +61,7 @@ export class PoolWatcher extends TypedEmitter<PoolWatcherEvents> {
     super();
 
     if (!poolSwapLibraryAddresses[args.chainId]) {
-      throw new Error(`unsupported chainId: ${args.chainId}, supported values are ${Object.keys(poolSwapLibraryAddresses).join(', ')}`);
+      throw new Error(`unsupported chainId: ${args.chainId}, supported values are [${Object.keys(poolSwapLibraryAddresses).join(', ')}]`);
     }
 
     this.provider = ethers.getDefaultProvider(args.nodeUrl);
