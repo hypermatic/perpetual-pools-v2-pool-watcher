@@ -25,13 +25,22 @@ export type UpkeepEventData = {
   endPrice: BigNumber
 }
 
-export type PoolWatcherConstructorArgs = {
+export type SpecificPool = {
+  poolAddress: string;
+}
+
+type PoolWatcherArgs = {
   nodeUrl: string
-  poolAddress: string
   chainId: string
   commitmentWindowBuffer: number
   oraclePriceTransformer?: (lastPrice: BigNumber, currentPrice: BigNumber) => BigNumber
 }
+
+export type PoolWatcherConstructorArgs = SpecificPool & PoolWatcherArgs;
+
+export type MultiplePoolWatcherConstructorArgs = {
+  poolAddresses: string[]
+} & PoolWatcherArgs;
 
 export type WatchedPool = {
   address: string,

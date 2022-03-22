@@ -32,15 +32,9 @@ import {
   RawCommitType,
   ExpectedPoolStateInputs
 } from './types';
+import { EVENT_NAMES } from './constants';
 
-export const EVENT_NAMES = {
-  COMMITMENT_WINDOW_ENDING: 'COMMITMENT_WINDOW_ENDING',
-  COMMITMENT_WINDOW_ENDED: 'COMMITMENT_WINDOW_ENDED',
-  UPKEEP: 'UPKEEP',
-  COMMIT: 'COMMIT'
-} as const;
-
-interface PoolWatcherEvents {
+export interface PoolWatcherEvents {
   [EVENT_NAMES.COMMIT]: (data: CommitEventData) => void;
   [EVENT_NAMES.UPKEEP]: (data: UpkeepEventData) => void;
   [EVENT_NAMES.COMMITMENT_WINDOW_ENDED]: () => void;
