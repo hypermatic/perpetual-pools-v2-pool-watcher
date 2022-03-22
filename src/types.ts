@@ -49,15 +49,24 @@ export type WatchedPool = {
   hasCalculatedStateThisUpdate: boolean,
 }
 
-export type CalculatedPoolState = {
+export type TotalPoolCommitmentsBN = {
+  longMintAmount: BigNumber;
+  longBurnAmount: BigNumber;
+  shortMintAmount: BigNumber;
+  shortBurnAmount: BigNumber;
+  shortBurnLongMintAmount: BigNumber;
+  longBurnShortMintAmount: BigNumber;
+  updateIntervalId: BigNumber;
+}
+
+export type ExpectedPoolState = {
   timestamp: number,
-  appropriateUpdateIntervalId: number,
-  currentSkew: number,
+  currentSkew: BigNumber,
   currentLongBalance: BigNumber,
   currentLongSupply: BigNumber,
   currentShortBalance: BigNumber,
   currentShortSupply: BigNumber,
-  expectedSkew: number,
+  expectedSkew: BigNumber,
   expectedLongBalance: BigNumber,
   expectedLongSupply: BigNumber,
   expectedShortBalance: BigNumber,
@@ -68,6 +77,7 @@ export type CalculatedPoolState = {
   expectedShortTokenPrice: BigNumber,
   lastOraclePrice: BigNumber,
   expectedOraclePrice: BigNumber,
+  pendingCommits: TotalPoolCommitmentsBN[]
 }
 
 export type TotalPoolCommitments = [
@@ -88,12 +98,13 @@ export type TotalPoolCommitments = [
   updateIntervalId: ethers.BigNumber;
 }
 
-export type TotalPoolCommitmentsBN = {
-  longMintAmount: BigNumber;
-  longBurnAmount: BigNumber;
-  shortMintAmount: BigNumber;
-  shortBurnAmount: BigNumber;
-  shortBurnLongMintAmount: BigNumber;
-  longBurnShortMintAmount: BigNumber;
-  updateIntervalId: BigNumber;
+export type ExpectedPoolStateInputs = {
+  leverage: number,
+  longBalance: BigNumber,
+  shortBalance: BigNumber,
+  longTokenSupply: BigNumber,
+  shortTokenSupply: BigNumber,
+  lastOraclePrice: BigNumber,
+  currentOraclePrice: BigNumber,
+  pendingCommits: Array<TotalPoolCommitmentsBN>
 }
