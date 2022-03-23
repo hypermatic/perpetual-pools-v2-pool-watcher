@@ -45,7 +45,7 @@ const _abi = [
         type: "address",
       },
     ],
-    name: "GovernanceAddressChanged",
+    name: "KeeperAddressChanged",
     type: "event",
   },
   {
@@ -53,18 +53,18 @@ const _abi = [
     inputs: [
       {
         indexed: true,
-        internalType: "address",
-        name: "oldAddress",
-        type: "address",
+        internalType: "uint256",
+        name: "long",
+        type: "uint256",
       },
       {
         indexed: true,
-        internalType: "address",
-        name: "newAddress",
-        type: "address",
+        internalType: "uint256",
+        name: "short",
+        type: "uint256",
       },
     ],
-    name: "KeeperAddressChanged",
+    name: "PoolBalancesChanged",
     type: "event",
   },
   {
@@ -85,7 +85,7 @@ const _abi = [
       {
         indexed: false,
         internalType: "address",
-        name: "quoteToken",
+        name: "settlementToken",
         type: "address",
       },
       {
@@ -154,11 +154,17 @@ const _abi = [
       {
         indexed: true,
         internalType: "address",
-        name: "newAddress",
+        name: "feeAddress",
         type: "address",
       },
+      {
+        indexed: false,
+        internalType: "uint256",
+        name: "amount",
+        type: "uint256",
+      },
     ],
-    name: "ProvisionalGovernanceChanged",
+    name: "PrimaryFeesPaid",
     type: "event",
   },
   {
@@ -178,6 +184,44 @@ const _abi = [
       },
     ],
     name: "SecondaryFeeAddressUpdated",
+    type: "event",
+  },
+  {
+    anonymous: false,
+    inputs: [
+      {
+        indexed: true,
+        internalType: "address",
+        name: "secondaryFeeAddress",
+        type: "address",
+      },
+      {
+        indexed: false,
+        internalType: "uint256",
+        name: "amount",
+        type: "uint256",
+      },
+    ],
+    name: "SecondaryFeesPaid",
+    type: "event",
+  },
+  {
+    anonymous: false,
+    inputs: [
+      {
+        indexed: true,
+        internalType: "address",
+        name: "to",
+        type: "address",
+      },
+      {
+        indexed: true,
+        internalType: "uint256",
+        name: "quantity",
+        type: "uint256",
+      },
+    ],
+    name: "SettlementWithdrawn",
     type: "event",
   },
   {
@@ -201,9 +245,9 @@ const _abi = [
   {
     inputs: [
       {
-        internalType: "bool",
-        name: "isLongToken",
-        type: "bool",
+        internalType: "uint256",
+        name: "tokenType",
+        type: "uint256",
       },
       {
         internalType: "uint256",
@@ -223,7 +267,14 @@ const _abi = [
   },
   {
     inputs: [],
-    name: "claimGovernance",
+    name: "claimPrimaryFees",
+    outputs: [],
+    stateMutability: "nonpayable",
+    type: "function",
+  },
+  {
+    inputs: [],
+    name: "claimSecondaryFees",
     outputs: [],
     stateMutability: "nonpayable",
     type: "function",
@@ -323,7 +374,7 @@ const _abi = [
           },
           {
             internalType: "address",
-            name: "_invariantCheckContract",
+            name: "_invariantCheck",
             type: "address",
           },
           {
@@ -363,7 +414,7 @@ const _abi = [
           },
           {
             internalType: "address",
-            name: "_quoteToken",
+            name: "_settlementToken",
             type: "address",
           },
           {
@@ -432,29 +483,6 @@ const _abi = [
       },
     ],
     stateMutability: "view",
-    type: "function",
-  },
-  {
-    inputs: [
-      {
-        internalType: "bool",
-        name: "isLongToken",
-        type: "bool",
-      },
-      {
-        internalType: "uint256",
-        name: "amount",
-        type: "uint256",
-      },
-      {
-        internalType: "address",
-        name: "burner",
-        type: "address",
-      },
-    ],
-    name: "mintTokens",
-    outputs: [],
-    stateMutability: "nonpayable",
     type: "function",
   },
   {
@@ -576,56 +604,28 @@ const _abi = [
   },
   {
     inputs: [],
-    name: "quoteToken",
+    name: "primaryFees",
     outputs: [
       {
-        internalType: "address",
+        internalType: "uint256",
         name: "",
-        type: "address",
+        type: "uint256",
       },
     ],
     stateMutability: "view",
     type: "function",
   },
   {
-    inputs: [
-      {
-        internalType: "address",
-        name: "to",
-        type: "address",
-      },
+    inputs: [],
+    name: "secondaryFees",
+    outputs: [
       {
         internalType: "uint256",
-        name: "amount",
+        name: "",
         type: "uint256",
       },
     ],
-    name: "quoteTokenTransfer",
-    outputs: [],
-    stateMutability: "nonpayable",
-    type: "function",
-  },
-  {
-    inputs: [
-      {
-        internalType: "address",
-        name: "from",
-        type: "address",
-      },
-      {
-        internalType: "address",
-        name: "to",
-        type: "address",
-      },
-      {
-        internalType: "uint256",
-        name: "amount",
-        type: "uint256",
-      },
-    ],
-    name: "quoteTokenTransferFrom",
-    outputs: [],
-    stateMutability: "nonpayable",
+    stateMutability: "view",
     type: "function",
   },
   {
@@ -674,12 +674,12 @@ const _abi = [
   },
   {
     inputs: [],
-    name: "shortBalance",
+    name: "settlementToken",
     outputs: [
       {
-        internalType: "uint256",
+        internalType: "address",
         name: "",
-        type: "uint256",
+        type: "address",
       },
     ],
     stateMutability: "view",
@@ -689,13 +689,54 @@ const _abi = [
     inputs: [
       {
         internalType: "address",
-        name: "_governance",
+        name: "to",
         type: "address",
       },
+      {
+        internalType: "uint256",
+        name: "amount",
+        type: "uint256",
+      },
     ],
-    name: "transferGovernance",
+    name: "settlementTokenTransfer",
     outputs: [],
     stateMutability: "nonpayable",
+    type: "function",
+  },
+  {
+    inputs: [
+      {
+        internalType: "address",
+        name: "from",
+        type: "address",
+      },
+      {
+        internalType: "address",
+        name: "to",
+        type: "address",
+      },
+      {
+        internalType: "uint256",
+        name: "amount",
+        type: "uint256",
+      },
+    ],
+    name: "settlementTokenTransferFrom",
+    outputs: [],
+    stateMutability: "nonpayable",
+    type: "function",
+  },
+  {
+    inputs: [],
+    name: "shortBalance",
+    outputs: [
+      {
+        internalType: "uint256",
+        name: "",
+        type: "uint256",
+      },
+    ],
+    stateMutability: "view",
     type: "function",
   },
   {

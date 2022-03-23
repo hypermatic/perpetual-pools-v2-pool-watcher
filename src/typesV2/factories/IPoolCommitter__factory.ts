@@ -28,6 +28,32 @@ const _abi = [
     inputs: [
       {
         indexed: true,
+        internalType: "uint256",
+        name: "_burningFee",
+        type: "uint256",
+      },
+    ],
+    name: "BurningFeeSet",
+    type: "event",
+  },
+  {
+    anonymous: false,
+    inputs: [
+      {
+        indexed: true,
+        internalType: "uint256",
+        name: "_changeInterval",
+        type: "uint256",
+      },
+    ],
+    name: "ChangeIntervalSet",
+    type: "event",
+  },
+  {
+    anonymous: false,
+    inputs: [
+      {
+        indexed: true,
         internalType: "address",
         name: "user",
         type: "address",
@@ -46,7 +72,7 @@ const _abi = [
         type: "address",
       },
       {
-        indexed: true,
+        indexed: false,
         internalType: "uint256",
         name: "amount",
         type: "uint256",
@@ -58,10 +84,22 @@ const _abi = [
         type: "uint8",
       },
       {
-        indexed: false,
+        indexed: true,
         internalType: "uint256",
         name: "appropriateUpdateIntervalId",
         type: "uint256",
+      },
+      {
+        indexed: false,
+        internalType: "bool",
+        name: "fromAggregateBalance",
+        type: "bool",
+      },
+      {
+        indexed: false,
+        internalType: "bool",
+        name: "payForClaim",
+        type: "bool",
       },
       {
         indexed: false,
@@ -90,6 +128,32 @@ const _abi = [
       },
     ],
     name: "ExecutedCommitsForInterval",
+    type: "event",
+  },
+  {
+    anonymous: false,
+    inputs: [
+      {
+        indexed: true,
+        internalType: "address",
+        name: "_feeController",
+        type: "address",
+      },
+    ],
+    name: "FeeControllerSet",
+    type: "event",
+  },
+  {
+    anonymous: false,
+    inputs: [
+      {
+        indexed: true,
+        internalType: "uint256",
+        name: "_mintingFee",
+        type: "uint256",
+      },
+    ],
+    name: "MintingFeeSet",
     type: "event",
   },
   {
@@ -134,9 +198,56 @@ const _abi = [
     type: "function",
   },
   {
-    inputs: [],
+    inputs: [
+      {
+        internalType: "uint256",
+        name: "lastPriceTimestamp",
+        type: "uint256",
+      },
+      {
+        internalType: "uint256",
+        name: "updateInterval",
+        type: "uint256",
+      },
+      {
+        internalType: "uint256",
+        name: "longBalance",
+        type: "uint256",
+      },
+      {
+        internalType: "uint256",
+        name: "shortBalance",
+        type: "uint256",
+      },
+    ],
     name: "executeCommitments",
-    outputs: [],
+    outputs: [
+      {
+        internalType: "uint256",
+        name: "",
+        type: "uint256",
+      },
+      {
+        internalType: "uint256",
+        name: "",
+        type: "uint256",
+      },
+      {
+        internalType: "uint256",
+        name: "",
+        type: "uint256",
+      },
+      {
+        internalType: "uint256",
+        name: "",
+        type: "uint256",
+      },
+      {
+        internalType: "uint256",
+        name: "",
+        type: "uint256",
+      },
+    ],
     stateMutability: "nonpayable",
     type: "function",
   },
@@ -190,98 +301,6 @@ const _abi = [
     type: "function",
   },
   {
-    inputs: [],
-    name: "getPendingCommits",
-    outputs: [
-      {
-        components: [
-          {
-            internalType: "uint256",
-            name: "longMintAmount",
-            type: "uint256",
-          },
-          {
-            internalType: "uint256",
-            name: "longBurnAmount",
-            type: "uint256",
-          },
-          {
-            internalType: "uint256",
-            name: "shortMintAmount",
-            type: "uint256",
-          },
-          {
-            internalType: "uint256",
-            name: "shortBurnAmount",
-            type: "uint256",
-          },
-          {
-            internalType: "uint256",
-            name: "shortBurnLongMintAmount",
-            type: "uint256",
-          },
-          {
-            internalType: "uint256",
-            name: "longBurnShortMintAmount",
-            type: "uint256",
-          },
-          {
-            internalType: "uint256",
-            name: "updateIntervalId",
-            type: "uint256",
-          },
-        ],
-        internalType: "struct IPoolCommitter.TotalCommitment",
-        name: "",
-        type: "tuple",
-      },
-      {
-        components: [
-          {
-            internalType: "uint256",
-            name: "longMintAmount",
-            type: "uint256",
-          },
-          {
-            internalType: "uint256",
-            name: "longBurnAmount",
-            type: "uint256",
-          },
-          {
-            internalType: "uint256",
-            name: "shortMintAmount",
-            type: "uint256",
-          },
-          {
-            internalType: "uint256",
-            name: "shortBurnAmount",
-            type: "uint256",
-          },
-          {
-            internalType: "uint256",
-            name: "shortBurnLongMintAmount",
-            type: "uint256",
-          },
-          {
-            internalType: "uint256",
-            name: "longBurnShortMintAmount",
-            type: "uint256",
-          },
-          {
-            internalType: "uint256",
-            name: "updateIntervalId",
-            type: "uint256",
-          },
-        ],
-        internalType: "struct IPoolCommitter.TotalCommitment",
-        name: "",
-        type: "tuple",
-      },
-    ],
-    stateMutability: "view",
-    type: "function",
-  },
-  {
     inputs: [
       {
         internalType: "address",
@@ -290,12 +309,22 @@ const _abi = [
       },
       {
         internalType: "address",
-        name: "_invariantCheckContract",
+        name: "_autoClaim",
         type: "address",
       },
       {
         internalType: "address",
-        name: "_autoClaim",
+        name: "_factoryOwner",
+        type: "address",
+      },
+      {
+        internalType: "address",
+        name: "_feeController",
+        type: "address",
+      },
+      {
+        internalType: "address",
+        name: "_invariantCheck",
         type: "address",
       },
       {
@@ -308,8 +337,78 @@ const _abi = [
         name: "burningFee",
         type: "uint256",
       },
+      {
+        internalType: "uint256",
+        name: "_changeInterval",
+        type: "uint256",
+      },
     ],
     name: "initialize",
+    outputs: [],
+    stateMutability: "nonpayable",
+    type: "function",
+  },
+  {
+    inputs: [],
+    name: "pendingLongBurnPoolTokens",
+    outputs: [
+      {
+        internalType: "uint256",
+        name: "",
+        type: "uint256",
+      },
+    ],
+    stateMutability: "view",
+    type: "function",
+  },
+  {
+    inputs: [],
+    name: "pendingMintSettlementAmount",
+    outputs: [
+      {
+        internalType: "uint256",
+        name: "",
+        type: "uint256",
+      },
+    ],
+    stateMutability: "view",
+    type: "function",
+  },
+  {
+    inputs: [],
+    name: "pendingShortBurnPoolTokens",
+    outputs: [
+      {
+        internalType: "uint256",
+        name: "",
+        type: "uint256",
+      },
+    ],
+    stateMutability: "view",
+    type: "function",
+  },
+  {
+    inputs: [
+      {
+        internalType: "uint256",
+        name: "_burningFee",
+        type: "uint256",
+      },
+    ],
+    name: "setBurningFee",
+    outputs: [],
+    stateMutability: "nonpayable",
+    type: "function",
+  },
+  {
+    inputs: [
+      {
+        internalType: "uint256",
+        name: "_changeInterval",
+        type: "uint256",
+      },
+    ],
+    name: "setChangeInterval",
     outputs: [],
     stateMutability: "nonpayable",
     type: "function",
@@ -318,16 +417,37 @@ const _abi = [
     inputs: [
       {
         internalType: "address",
-        name: "_quoteToken",
+        name: "_feeController",
         type: "address",
       },
+    ],
+    name: "setFeeController",
+    outputs: [],
+    stateMutability: "nonpayable",
+    type: "function",
+  },
+  {
+    inputs: [
+      {
+        internalType: "uint256",
+        name: "_mintingFee",
+        type: "uint256",
+      },
+    ],
+    name: "setMintingFee",
+    outputs: [],
+    stateMutability: "nonpayable",
+    type: "function",
+  },
+  {
+    inputs: [
       {
         internalType: "address",
         name: "_leveragedPool",
         type: "address",
       },
     ],
-    name: "setQuoteAndPool",
+    name: "setPool",
     outputs: [],
     stateMutability: "nonpayable",
     type: "function",

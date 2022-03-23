@@ -15,6 +15,8 @@ export type CommitEventData = {
   amount: BigNumber,
   commitType: RawCommitType,
   appropriateIntervalId: number,
+  payForClaim: boolean,
+  fromAggregateBalance: boolean,
   mintingFee: string
 }
 
@@ -42,7 +44,7 @@ export type WatchedPool = {
   leverage: number,
   longTokenInstance: ERC20,
   shortTokenInstance: ERC20,
-  quoteTokenInstance: ERC20,
+  settlementTokenInstance: ERC20,
   committerInstance: PoolCommitter,
   frontRunningInterval: number,
   isUpdatingLastPriceTimestamp: boolean,
@@ -50,12 +52,12 @@ export type WatchedPool = {
 }
 
 export type TotalPoolCommitmentsBN = {
-  longMintAmount: BigNumber;
-  longBurnAmount: BigNumber;
-  shortMintAmount: BigNumber;
-  shortBurnAmount: BigNumber;
-  shortBurnLongMintAmount: BigNumber;
-  longBurnShortMintAmount: BigNumber;
+  longMintSettlement: BigNumber;
+  longBurnPoolTokens: BigNumber;
+  shortMintSettlement: BigNumber;
+  shortBurnPoolTokens: BigNumber;
+  shortBurnLongMintPoolTokens: BigNumber;
+  longBurnShortMintPoolTokens: BigNumber;
   updateIntervalId: BigNumber;
 }
 
@@ -89,12 +91,12 @@ export type TotalPoolCommitments = [
   ethers.BigNumber,
   ethers.BigNumber
 ] & {
-  longMintAmount: ethers.BigNumber;
-  longBurnAmount: ethers.BigNumber;
-  shortMintAmount: ethers.BigNumber;
-  shortBurnAmount: ethers.BigNumber;
-  shortBurnLongMintAmount: ethers.BigNumber;
-  longBurnShortMintAmount: ethers.BigNumber;
+  longMintSettlement: ethers.BigNumber;
+  longBurnPoolTokens: ethers.BigNumber;
+  shortMintSettlement: ethers.BigNumber;
+  shortBurnPoolTokens: ethers.BigNumber;
+  shortBurnLongMintPoolTokens: ethers.BigNumber;
+  longBurnShortMintPoolTokens: ethers.BigNumber;
   updateIntervalId: ethers.BigNumber;
 }
 

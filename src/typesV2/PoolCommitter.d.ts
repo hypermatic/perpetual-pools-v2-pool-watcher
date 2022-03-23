@@ -23,26 +23,38 @@ import { TypedEventFilter, TypedEvent, TypedListener } from "./commons";
 interface PoolCommitterInterface extends ethers.utils.Interface {
   functions: {
     "LONG_INDEX()": FunctionFragment;
+    "MAX_ITERATIONS()": FunctionFragment;
     "SHORT_INDEX()": FunctionFragment;
     "autoClaim()": FunctionFragment;
     "burnFeeHistory(uint256)": FunctionFragment;
+    "burningFee()": FunctionFragment;
+    "changeInterval()": FunctionFragment;
     "claim(address)": FunctionFragment;
     "commit(uint8,uint256,bool,bool)": FunctionFragment;
-    "executeCommitments()": FunctionFragment;
+    "executeCommitments(uint256,uint256,uint256,uint256)": FunctionFragment;
     "factory()": FunctionFragment;
+    "feeController()": FunctionFragment;
     "getAggregateBalance(address)": FunctionFragment;
     "getAppropriateUpdateIntervalId()": FunctionFragment;
-    "getPendingCommits()": FunctionFragment;
+    "getBurningFee()": FunctionFragment;
+    "getMintingFee()": FunctionFragment;
     "governance()": FunctionFragment;
-    "initialize(address,address,address,uint256,uint256)": FunctionFragment;
+    "initialize(address,address,address,address,address,uint256,uint256,uint256)": FunctionFragment;
     "invariantCheck()": FunctionFragment;
-    "invariantCheckContract()": FunctionFragment;
     "lastUpdatedIntervalId(address)": FunctionFragment;
     "leveragedPool()": FunctionFragment;
+    "mintingFee()": FunctionFragment;
     "pause()": FunctionFragment;
     "paused()": FunctionFragment;
+    "pendingLongBurnPoolTokens()": FunctionFragment;
+    "pendingMintSettlementAmount()": FunctionFragment;
+    "pendingShortBurnPoolTokens()": FunctionFragment;
     "priceHistory(uint256)": FunctionFragment;
-    "setQuoteAndPool(address,address)": FunctionFragment;
+    "setBurningFee(uint256)": FunctionFragment;
+    "setChangeInterval(uint256)": FunctionFragment;
+    "setFeeController(address)": FunctionFragment;
+    "setMintingFee(uint256)": FunctionFragment;
+    "setPool(address)": FunctionFragment;
     "tokens(uint256)": FunctionFragment;
     "totalPoolCommitments(uint256)": FunctionFragment;
     "unAggregatedCommitments(address,uint256)": FunctionFragment;
@@ -58,6 +70,10 @@ interface PoolCommitterInterface extends ethers.utils.Interface {
     values?: undefined
   ): string;
   encodeFunctionData(
+    functionFragment: "MAX_ITERATIONS",
+    values?: undefined
+  ): string;
+  encodeFunctionData(
     functionFragment: "SHORT_INDEX",
     values?: undefined
   ): string;
@@ -66,6 +82,14 @@ interface PoolCommitterInterface extends ethers.utils.Interface {
     functionFragment: "burnFeeHistory",
     values: [BigNumberish]
   ): string;
+  encodeFunctionData(
+    functionFragment: "burningFee",
+    values?: undefined
+  ): string;
+  encodeFunctionData(
+    functionFragment: "changeInterval",
+    values?: undefined
+  ): string;
   encodeFunctionData(functionFragment: "claim", values: [string]): string;
   encodeFunctionData(
     functionFragment: "commit",
@@ -73,9 +97,13 @@ interface PoolCommitterInterface extends ethers.utils.Interface {
   ): string;
   encodeFunctionData(
     functionFragment: "executeCommitments",
-    values?: undefined
+    values: [BigNumberish, BigNumberish, BigNumberish, BigNumberish]
   ): string;
   encodeFunctionData(functionFragment: "factory", values?: undefined): string;
+  encodeFunctionData(
+    functionFragment: "feeController",
+    values?: undefined
+  ): string;
   encodeFunctionData(
     functionFragment: "getAggregateBalance",
     values: [string]
@@ -85,7 +113,11 @@ interface PoolCommitterInterface extends ethers.utils.Interface {
     values?: undefined
   ): string;
   encodeFunctionData(
-    functionFragment: "getPendingCommits",
+    functionFragment: "getBurningFee",
+    values?: undefined
+  ): string;
+  encodeFunctionData(
+    functionFragment: "getMintingFee",
     values?: undefined
   ): string;
   encodeFunctionData(
@@ -94,14 +126,19 @@ interface PoolCommitterInterface extends ethers.utils.Interface {
   ): string;
   encodeFunctionData(
     functionFragment: "initialize",
-    values: [string, string, string, BigNumberish, BigNumberish]
+    values: [
+      string,
+      string,
+      string,
+      string,
+      string,
+      BigNumberish,
+      BigNumberish,
+      BigNumberish
+    ]
   ): string;
   encodeFunctionData(
     functionFragment: "invariantCheck",
-    values?: undefined
-  ): string;
-  encodeFunctionData(
-    functionFragment: "invariantCheckContract",
     values?: undefined
   ): string;
   encodeFunctionData(
@@ -112,16 +149,45 @@ interface PoolCommitterInterface extends ethers.utils.Interface {
     functionFragment: "leveragedPool",
     values?: undefined
   ): string;
+  encodeFunctionData(
+    functionFragment: "mintingFee",
+    values?: undefined
+  ): string;
   encodeFunctionData(functionFragment: "pause", values?: undefined): string;
   encodeFunctionData(functionFragment: "paused", values?: undefined): string;
+  encodeFunctionData(
+    functionFragment: "pendingLongBurnPoolTokens",
+    values?: undefined
+  ): string;
+  encodeFunctionData(
+    functionFragment: "pendingMintSettlementAmount",
+    values?: undefined
+  ): string;
+  encodeFunctionData(
+    functionFragment: "pendingShortBurnPoolTokens",
+    values?: undefined
+  ): string;
   encodeFunctionData(
     functionFragment: "priceHistory",
     values: [BigNumberish]
   ): string;
   encodeFunctionData(
-    functionFragment: "setQuoteAndPool",
-    values: [string, string]
+    functionFragment: "setBurningFee",
+    values: [BigNumberish]
   ): string;
+  encodeFunctionData(
+    functionFragment: "setChangeInterval",
+    values: [BigNumberish]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "setFeeController",
+    values: [string]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "setMintingFee",
+    values: [BigNumberish]
+  ): string;
+  encodeFunctionData(functionFragment: "setPool", values: [string]): string;
   encodeFunctionData(
     functionFragment: "tokens",
     values: [BigNumberish]
@@ -154,12 +220,21 @@ interface PoolCommitterInterface extends ethers.utils.Interface {
 
   decodeFunctionResult(functionFragment: "LONG_INDEX", data: BytesLike): Result;
   decodeFunctionResult(
+    functionFragment: "MAX_ITERATIONS",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
     functionFragment: "SHORT_INDEX",
     data: BytesLike
   ): Result;
   decodeFunctionResult(functionFragment: "autoClaim", data: BytesLike): Result;
   decodeFunctionResult(
     functionFragment: "burnFeeHistory",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(functionFragment: "burningFee", data: BytesLike): Result;
+  decodeFunctionResult(
+    functionFragment: "changeInterval",
     data: BytesLike
   ): Result;
   decodeFunctionResult(functionFragment: "claim", data: BytesLike): Result;
@@ -170,6 +245,10 @@ interface PoolCommitterInterface extends ethers.utils.Interface {
   ): Result;
   decodeFunctionResult(functionFragment: "factory", data: BytesLike): Result;
   decodeFunctionResult(
+    functionFragment: "feeController",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
     functionFragment: "getAggregateBalance",
     data: BytesLike
   ): Result;
@@ -178,17 +257,17 @@ interface PoolCommitterInterface extends ethers.utils.Interface {
     data: BytesLike
   ): Result;
   decodeFunctionResult(
-    functionFragment: "getPendingCommits",
+    functionFragment: "getBurningFee",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "getMintingFee",
     data: BytesLike
   ): Result;
   decodeFunctionResult(functionFragment: "governance", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "initialize", data: BytesLike): Result;
   decodeFunctionResult(
     functionFragment: "invariantCheck",
-    data: BytesLike
-  ): Result;
-  decodeFunctionResult(
-    functionFragment: "invariantCheckContract",
     data: BytesLike
   ): Result;
   decodeFunctionResult(
@@ -199,16 +278,42 @@ interface PoolCommitterInterface extends ethers.utils.Interface {
     functionFragment: "leveragedPool",
     data: BytesLike
   ): Result;
+  decodeFunctionResult(functionFragment: "mintingFee", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "pause", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "paused", data: BytesLike): Result;
+  decodeFunctionResult(
+    functionFragment: "pendingLongBurnPoolTokens",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "pendingMintSettlementAmount",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "pendingShortBurnPoolTokens",
+    data: BytesLike
+  ): Result;
   decodeFunctionResult(
     functionFragment: "priceHistory",
     data: BytesLike
   ): Result;
   decodeFunctionResult(
-    functionFragment: "setQuoteAndPool",
+    functionFragment: "setBurningFee",
     data: BytesLike
   ): Result;
+  decodeFunctionResult(
+    functionFragment: "setChangeInterval",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "setFeeController",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "setMintingFee",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(functionFragment: "setPool", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "tokens", data: BytesLike): Result;
   decodeFunctionResult(
     functionFragment: "totalPoolCommitments",
@@ -238,15 +343,27 @@ interface PoolCommitterInterface extends ethers.utils.Interface {
 
   events: {
     "AggregateBalanceUpdated(address)": EventFragment;
+    "BurningFeeSet(uint256)": EventFragment;
+    "ChangeIntervalSet(uint256)": EventFragment;
     "Claim(address)": EventFragment;
-    "CreateCommit(address,uint256,uint8,uint256,bytes16)": EventFragment;
+    "CreateCommit(address,uint256,uint8,uint256,bool,bool,bytes16)": EventFragment;
     "ExecutedCommitsForInterval(uint256,bytes16)": EventFragment;
+    "FeeControllerSet(address)": EventFragment;
+    "MintingFeeSet(uint256)": EventFragment;
+    "Paused()": EventFragment;
+    "Unpaused()": EventFragment;
   };
 
   getEvent(nameOrSignatureOrTopic: "AggregateBalanceUpdated"): EventFragment;
+  getEvent(nameOrSignatureOrTopic: "BurningFeeSet"): EventFragment;
+  getEvent(nameOrSignatureOrTopic: "ChangeIntervalSet"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "Claim"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "CreateCommit"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "ExecutedCommitsForInterval"): EventFragment;
+  getEvent(nameOrSignatureOrTopic: "FeeControllerSet"): EventFragment;
+  getEvent(nameOrSignatureOrTopic: "MintingFeeSet"): EventFragment;
+  getEvent(nameOrSignatureOrTopic: "Paused"): EventFragment;
+  getEvent(nameOrSignatureOrTopic: "Unpaused"): EventFragment;
 }
 
 export class PoolCommitter extends BaseContract {
@@ -295,6 +412,8 @@ export class PoolCommitter extends BaseContract {
   functions: {
     LONG_INDEX(overrides?: CallOverrides): Promise<[BigNumber]>;
 
+    MAX_ITERATIONS(overrides?: CallOverrides): Promise<[number]>;
+
     SHORT_INDEX(overrides?: CallOverrides): Promise<[BigNumber]>;
 
     autoClaim(overrides?: CallOverrides): Promise<[string]>;
@@ -303,6 +422,10 @@ export class PoolCommitter extends BaseContract {
       arg0: BigNumberish,
       overrides?: CallOverrides
     ): Promise<[string]>;
+
+    burningFee(overrides?: CallOverrides): Promise<[string]>;
+
+    changeInterval(overrides?: CallOverrides): Promise<[string]>;
 
     claim(
       user: string,
@@ -318,10 +441,16 @@ export class PoolCommitter extends BaseContract {
     ): Promise<ContractTransaction>;
 
     executeCommitments(
+      lastPriceTimestamp: BigNumberish,
+      updateInterval: BigNumberish,
+      longBalance: BigNumberish,
+      shortBalance: BigNumberish,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<ContractTransaction>;
 
     factory(overrides?: CallOverrides): Promise<[string]>;
+
+    feeController(overrides?: CallOverrides): Promise<[string]>;
 
     getAggregateBalance(
       user: string,
@@ -340,61 +469,25 @@ export class PoolCommitter extends BaseContract {
       overrides?: CallOverrides
     ): Promise<[BigNumber]>;
 
-    getPendingCommits(
-      overrides?: CallOverrides
-    ): Promise<
-      [
-        [
-          BigNumber,
-          BigNumber,
-          BigNumber,
-          BigNumber,
-          BigNumber,
-          BigNumber,
-          BigNumber
-        ] & {
-          longMintAmount: BigNumber;
-          longBurnAmount: BigNumber;
-          shortMintAmount: BigNumber;
-          shortBurnAmount: BigNumber;
-          shortBurnLongMintAmount: BigNumber;
-          longBurnShortMintAmount: BigNumber;
-          updateIntervalId: BigNumber;
-        },
-        [
-          BigNumber,
-          BigNumber,
-          BigNumber,
-          BigNumber,
-          BigNumber,
-          BigNumber,
-          BigNumber
-        ] & {
-          longMintAmount: BigNumber;
-          longBurnAmount: BigNumber;
-          shortMintAmount: BigNumber;
-          shortBurnAmount: BigNumber;
-          shortBurnLongMintAmount: BigNumber;
-          longBurnShortMintAmount: BigNumber;
-          updateIntervalId: BigNumber;
-        }
-      ]
-    >;
+    getBurningFee(overrides?: CallOverrides): Promise<[BigNumber]>;
+
+    getMintingFee(overrides?: CallOverrides): Promise<[BigNumber]>;
 
     governance(overrides?: CallOverrides): Promise<[string]>;
 
     initialize(
       _factory: string,
-      _invariantCheckContract: string,
       _autoClaim: string,
+      _factoryOwner: string,
+      _feeController: string,
+      _invariantCheck: string,
       _mintingFee: BigNumberish,
       _burningFee: BigNumberish,
+      _changeInterval: BigNumberish,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<ContractTransaction>;
 
     invariantCheck(overrides?: CallOverrides): Promise<[string]>;
-
-    invariantCheckContract(overrides?: CallOverrides): Promise<[string]>;
 
     lastUpdatedIntervalId(
       arg0: string,
@@ -403,19 +496,48 @@ export class PoolCommitter extends BaseContract {
 
     leveragedPool(overrides?: CallOverrides): Promise<[string]>;
 
+    mintingFee(overrides?: CallOverrides): Promise<[string]>;
+
     pause(
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<ContractTransaction>;
 
     paused(overrides?: CallOverrides): Promise<[boolean]>;
 
+    pendingLongBurnPoolTokens(overrides?: CallOverrides): Promise<[BigNumber]>;
+
+    pendingMintSettlementAmount(
+      overrides?: CallOverrides
+    ): Promise<[BigNumber]>;
+
+    pendingShortBurnPoolTokens(overrides?: CallOverrides): Promise<[BigNumber]>;
+
     priceHistory(
       arg0: BigNumberish,
       overrides?: CallOverrides
     ): Promise<[string, string] & { longPrice: string; shortPrice: string }>;
 
-    setQuoteAndPool(
-      _quoteToken: string,
+    setBurningFee(
+      _burningFee: BigNumberish,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<ContractTransaction>;
+
+    setChangeInterval(
+      _changeInterval: BigNumberish,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<ContractTransaction>;
+
+    setFeeController(
+      _feeController: string,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<ContractTransaction>;
+
+    setMintingFee(
+      _mintingFee: BigNumberish,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<ContractTransaction>;
+
+    setPool(
       _leveragedPool: string,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<ContractTransaction>;
@@ -435,12 +557,12 @@ export class PoolCommitter extends BaseContract {
         BigNumber,
         BigNumber
       ] & {
-        longMintAmount: BigNumber;
-        longBurnAmount: BigNumber;
-        shortMintAmount: BigNumber;
-        shortBurnAmount: BigNumber;
-        shortBurnLongMintAmount: BigNumber;
-        longBurnShortMintAmount: BigNumber;
+        longMintSettlement: BigNumber;
+        longBurnPoolTokens: BigNumber;
+        shortMintSettlement: BigNumber;
+        shortBurnPoolTokens: BigNumber;
+        shortBurnLongMintPoolTokens: BigNumber;
+        longBurnShortMintPoolTokens: BigNumber;
         updateIntervalId: BigNumber;
       }
     >;
@@ -491,22 +613,24 @@ export class PoolCommitter extends BaseContract {
         BigNumber,
         BigNumber
       ] & {
-        longMintAmount: BigNumber;
-        longBurnAmount: BigNumber;
-        balanceLongBurnAmount: BigNumber;
-        shortMintAmount: BigNumber;
-        shortBurnAmount: BigNumber;
-        balanceShortBurnAmount: BigNumber;
-        shortBurnLongMintAmount: BigNumber;
-        balanceShortBurnMintAmount: BigNumber;
-        longBurnShortMintAmount: BigNumber;
-        balanceLongBurnMintAmount: BigNumber;
+        longMintSettlement: BigNumber;
+        longBurnPoolTokens: BigNumber;
+        balanceLongBurnPoolTokens: BigNumber;
+        shortMintSettlement: BigNumber;
+        shortBurnPoolTokens: BigNumber;
+        balanceShortBurnPoolTokens: BigNumber;
+        shortBurnLongMintPoolTokens: BigNumber;
+        balanceShortBurnMintPoolTokens: BigNumber;
+        longBurnShortMintPoolTokens: BigNumber;
+        balanceLongBurnMintPoolTokens: BigNumber;
         updateIntervalId: BigNumber;
       }
     >;
   };
 
   LONG_INDEX(overrides?: CallOverrides): Promise<BigNumber>;
+
+  MAX_ITERATIONS(overrides?: CallOverrides): Promise<number>;
 
   SHORT_INDEX(overrides?: CallOverrides): Promise<BigNumber>;
 
@@ -516,6 +640,10 @@ export class PoolCommitter extends BaseContract {
     arg0: BigNumberish,
     overrides?: CallOverrides
   ): Promise<string>;
+
+  burningFee(overrides?: CallOverrides): Promise<string>;
+
+  changeInterval(overrides?: CallOverrides): Promise<string>;
 
   claim(
     user: string,
@@ -531,10 +659,16 @@ export class PoolCommitter extends BaseContract {
   ): Promise<ContractTransaction>;
 
   executeCommitments(
+    lastPriceTimestamp: BigNumberish,
+    updateInterval: BigNumberish,
+    longBalance: BigNumberish,
+    shortBalance: BigNumberish,
     overrides?: Overrides & { from?: string | Promise<string> }
   ): Promise<ContractTransaction>;
 
   factory(overrides?: CallOverrides): Promise<string>;
+
+  feeController(overrides?: CallOverrides): Promise<string>;
 
   getAggregateBalance(
     user: string,
@@ -549,61 +683,25 @@ export class PoolCommitter extends BaseContract {
 
   getAppropriateUpdateIntervalId(overrides?: CallOverrides): Promise<BigNumber>;
 
-  getPendingCommits(
-    overrides?: CallOverrides
-  ): Promise<
-    [
-      [
-        BigNumber,
-        BigNumber,
-        BigNumber,
-        BigNumber,
-        BigNumber,
-        BigNumber,
-        BigNumber
-      ] & {
-        longMintAmount: BigNumber;
-        longBurnAmount: BigNumber;
-        shortMintAmount: BigNumber;
-        shortBurnAmount: BigNumber;
-        shortBurnLongMintAmount: BigNumber;
-        longBurnShortMintAmount: BigNumber;
-        updateIntervalId: BigNumber;
-      },
-      [
-        BigNumber,
-        BigNumber,
-        BigNumber,
-        BigNumber,
-        BigNumber,
-        BigNumber,
-        BigNumber
-      ] & {
-        longMintAmount: BigNumber;
-        longBurnAmount: BigNumber;
-        shortMintAmount: BigNumber;
-        shortBurnAmount: BigNumber;
-        shortBurnLongMintAmount: BigNumber;
-        longBurnShortMintAmount: BigNumber;
-        updateIntervalId: BigNumber;
-      }
-    ]
-  >;
+  getBurningFee(overrides?: CallOverrides): Promise<BigNumber>;
+
+  getMintingFee(overrides?: CallOverrides): Promise<BigNumber>;
 
   governance(overrides?: CallOverrides): Promise<string>;
 
   initialize(
     _factory: string,
-    _invariantCheckContract: string,
     _autoClaim: string,
+    _factoryOwner: string,
+    _feeController: string,
+    _invariantCheck: string,
     _mintingFee: BigNumberish,
     _burningFee: BigNumberish,
+    _changeInterval: BigNumberish,
     overrides?: Overrides & { from?: string | Promise<string> }
   ): Promise<ContractTransaction>;
 
   invariantCheck(overrides?: CallOverrides): Promise<string>;
-
-  invariantCheckContract(overrides?: CallOverrides): Promise<string>;
 
   lastUpdatedIntervalId(
     arg0: string,
@@ -612,19 +710,46 @@ export class PoolCommitter extends BaseContract {
 
   leveragedPool(overrides?: CallOverrides): Promise<string>;
 
+  mintingFee(overrides?: CallOverrides): Promise<string>;
+
   pause(
     overrides?: Overrides & { from?: string | Promise<string> }
   ): Promise<ContractTransaction>;
 
   paused(overrides?: CallOverrides): Promise<boolean>;
 
+  pendingLongBurnPoolTokens(overrides?: CallOverrides): Promise<BigNumber>;
+
+  pendingMintSettlementAmount(overrides?: CallOverrides): Promise<BigNumber>;
+
+  pendingShortBurnPoolTokens(overrides?: CallOverrides): Promise<BigNumber>;
+
   priceHistory(
     arg0: BigNumberish,
     overrides?: CallOverrides
   ): Promise<[string, string] & { longPrice: string; shortPrice: string }>;
 
-  setQuoteAndPool(
-    _quoteToken: string,
+  setBurningFee(
+    _burningFee: BigNumberish,
+    overrides?: Overrides & { from?: string | Promise<string> }
+  ): Promise<ContractTransaction>;
+
+  setChangeInterval(
+    _changeInterval: BigNumberish,
+    overrides?: Overrides & { from?: string | Promise<string> }
+  ): Promise<ContractTransaction>;
+
+  setFeeController(
+    _feeController: string,
+    overrides?: Overrides & { from?: string | Promise<string> }
+  ): Promise<ContractTransaction>;
+
+  setMintingFee(
+    _mintingFee: BigNumberish,
+    overrides?: Overrides & { from?: string | Promise<string> }
+  ): Promise<ContractTransaction>;
+
+  setPool(
     _leveragedPool: string,
     overrides?: Overrides & { from?: string | Promise<string> }
   ): Promise<ContractTransaction>;
@@ -644,12 +769,12 @@ export class PoolCommitter extends BaseContract {
       BigNumber,
       BigNumber
     ] & {
-      longMintAmount: BigNumber;
-      longBurnAmount: BigNumber;
-      shortMintAmount: BigNumber;
-      shortBurnAmount: BigNumber;
-      shortBurnLongMintAmount: BigNumber;
-      longBurnShortMintAmount: BigNumber;
+      longMintSettlement: BigNumber;
+      longBurnPoolTokens: BigNumber;
+      shortMintSettlement: BigNumber;
+      shortBurnPoolTokens: BigNumber;
+      shortBurnLongMintPoolTokens: BigNumber;
+      longBurnShortMintPoolTokens: BigNumber;
       updateIntervalId: BigNumber;
     }
   >;
@@ -700,22 +825,24 @@ export class PoolCommitter extends BaseContract {
       BigNumber,
       BigNumber
     ] & {
-      longMintAmount: BigNumber;
-      longBurnAmount: BigNumber;
-      balanceLongBurnAmount: BigNumber;
-      shortMintAmount: BigNumber;
-      shortBurnAmount: BigNumber;
-      balanceShortBurnAmount: BigNumber;
-      shortBurnLongMintAmount: BigNumber;
-      balanceShortBurnMintAmount: BigNumber;
-      longBurnShortMintAmount: BigNumber;
-      balanceLongBurnMintAmount: BigNumber;
+      longMintSettlement: BigNumber;
+      longBurnPoolTokens: BigNumber;
+      balanceLongBurnPoolTokens: BigNumber;
+      shortMintSettlement: BigNumber;
+      shortBurnPoolTokens: BigNumber;
+      balanceShortBurnPoolTokens: BigNumber;
+      shortBurnLongMintPoolTokens: BigNumber;
+      balanceShortBurnMintPoolTokens: BigNumber;
+      longBurnShortMintPoolTokens: BigNumber;
+      balanceLongBurnMintPoolTokens: BigNumber;
       updateIntervalId: BigNumber;
     }
   >;
 
   callStatic: {
     LONG_INDEX(overrides?: CallOverrides): Promise<BigNumber>;
+
+    MAX_ITERATIONS(overrides?: CallOverrides): Promise<number>;
 
     SHORT_INDEX(overrides?: CallOverrides): Promise<BigNumber>;
 
@@ -725,6 +852,10 @@ export class PoolCommitter extends BaseContract {
       arg0: BigNumberish,
       overrides?: CallOverrides
     ): Promise<string>;
+
+    burningFee(overrides?: CallOverrides): Promise<string>;
+
+    changeInterval(overrides?: CallOverrides): Promise<string>;
 
     claim(user: string, overrides?: CallOverrides): Promise<void>;
 
@@ -736,9 +867,17 @@ export class PoolCommitter extends BaseContract {
       overrides?: CallOverrides
     ): Promise<void>;
 
-    executeCommitments(overrides?: CallOverrides): Promise<void>;
+    executeCommitments(
+      lastPriceTimestamp: BigNumberish,
+      updateInterval: BigNumberish,
+      longBalance: BigNumberish,
+      shortBalance: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<[BigNumber, BigNumber, BigNumber, BigNumber, BigNumber]>;
 
     factory(overrides?: CallOverrides): Promise<string>;
+
+    feeController(overrides?: CallOverrides): Promise<string>;
 
     getAggregateBalance(
       user: string,
@@ -755,61 +894,25 @@ export class PoolCommitter extends BaseContract {
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
-    getPendingCommits(
-      overrides?: CallOverrides
-    ): Promise<
-      [
-        [
-          BigNumber,
-          BigNumber,
-          BigNumber,
-          BigNumber,
-          BigNumber,
-          BigNumber,
-          BigNumber
-        ] & {
-          longMintAmount: BigNumber;
-          longBurnAmount: BigNumber;
-          shortMintAmount: BigNumber;
-          shortBurnAmount: BigNumber;
-          shortBurnLongMintAmount: BigNumber;
-          longBurnShortMintAmount: BigNumber;
-          updateIntervalId: BigNumber;
-        },
-        [
-          BigNumber,
-          BigNumber,
-          BigNumber,
-          BigNumber,
-          BigNumber,
-          BigNumber,
-          BigNumber
-        ] & {
-          longMintAmount: BigNumber;
-          longBurnAmount: BigNumber;
-          shortMintAmount: BigNumber;
-          shortBurnAmount: BigNumber;
-          shortBurnLongMintAmount: BigNumber;
-          longBurnShortMintAmount: BigNumber;
-          updateIntervalId: BigNumber;
-        }
-      ]
-    >;
+    getBurningFee(overrides?: CallOverrides): Promise<BigNumber>;
+
+    getMintingFee(overrides?: CallOverrides): Promise<BigNumber>;
 
     governance(overrides?: CallOverrides): Promise<string>;
 
     initialize(
       _factory: string,
-      _invariantCheckContract: string,
       _autoClaim: string,
+      _factoryOwner: string,
+      _feeController: string,
+      _invariantCheck: string,
       _mintingFee: BigNumberish,
       _burningFee: BigNumberish,
+      _changeInterval: BigNumberish,
       overrides?: CallOverrides
     ): Promise<void>;
 
     invariantCheck(overrides?: CallOverrides): Promise<string>;
-
-    invariantCheckContract(overrides?: CallOverrides): Promise<string>;
 
     lastUpdatedIntervalId(
       arg0: string,
@@ -818,20 +921,44 @@ export class PoolCommitter extends BaseContract {
 
     leveragedPool(overrides?: CallOverrides): Promise<string>;
 
+    mintingFee(overrides?: CallOverrides): Promise<string>;
+
     pause(overrides?: CallOverrides): Promise<void>;
 
     paused(overrides?: CallOverrides): Promise<boolean>;
+
+    pendingLongBurnPoolTokens(overrides?: CallOverrides): Promise<BigNumber>;
+
+    pendingMintSettlementAmount(overrides?: CallOverrides): Promise<BigNumber>;
+
+    pendingShortBurnPoolTokens(overrides?: CallOverrides): Promise<BigNumber>;
 
     priceHistory(
       arg0: BigNumberish,
       overrides?: CallOverrides
     ): Promise<[string, string] & { longPrice: string; shortPrice: string }>;
 
-    setQuoteAndPool(
-      _quoteToken: string,
-      _leveragedPool: string,
+    setBurningFee(
+      _burningFee: BigNumberish,
       overrides?: CallOverrides
     ): Promise<void>;
+
+    setChangeInterval(
+      _changeInterval: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<void>;
+
+    setFeeController(
+      _feeController: string,
+      overrides?: CallOverrides
+    ): Promise<void>;
+
+    setMintingFee(
+      _mintingFee: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<void>;
+
+    setPool(_leveragedPool: string, overrides?: CallOverrides): Promise<void>;
 
     tokens(arg0: BigNumberish, overrides?: CallOverrides): Promise<string>;
 
@@ -848,12 +975,12 @@ export class PoolCommitter extends BaseContract {
         BigNumber,
         BigNumber
       ] & {
-        longMintAmount: BigNumber;
-        longBurnAmount: BigNumber;
-        shortMintAmount: BigNumber;
-        shortBurnAmount: BigNumber;
-        shortBurnLongMintAmount: BigNumber;
-        longBurnShortMintAmount: BigNumber;
+        longMintSettlement: BigNumber;
+        longBurnPoolTokens: BigNumber;
+        shortMintSettlement: BigNumber;
+        shortBurnPoolTokens: BigNumber;
+        shortBurnLongMintPoolTokens: BigNumber;
+        longBurnShortMintPoolTokens: BigNumber;
         updateIntervalId: BigNumber;
       }
     >;
@@ -902,16 +1029,16 @@ export class PoolCommitter extends BaseContract {
         BigNumber,
         BigNumber
       ] & {
-        longMintAmount: BigNumber;
-        longBurnAmount: BigNumber;
-        balanceLongBurnAmount: BigNumber;
-        shortMintAmount: BigNumber;
-        shortBurnAmount: BigNumber;
-        balanceShortBurnAmount: BigNumber;
-        shortBurnLongMintAmount: BigNumber;
-        balanceShortBurnMintAmount: BigNumber;
-        longBurnShortMintAmount: BigNumber;
-        balanceLongBurnMintAmount: BigNumber;
+        longMintSettlement: BigNumber;
+        longBurnPoolTokens: BigNumber;
+        balanceLongBurnPoolTokens: BigNumber;
+        shortMintSettlement: BigNumber;
+        shortBurnPoolTokens: BigNumber;
+        balanceShortBurnPoolTokens: BigNumber;
+        shortBurnLongMintPoolTokens: BigNumber;
+        balanceShortBurnMintPoolTokens: BigNumber;
+        longBurnShortMintPoolTokens: BigNumber;
+        balanceLongBurnMintPoolTokens: BigNumber;
         updateIntervalId: BigNumber;
       }
     >;
@@ -922,21 +1049,33 @@ export class PoolCommitter extends BaseContract {
       user?: string | null
     ): TypedEventFilter<[string], { user: string }>;
 
+    BurningFeeSet(
+      _burningFee?: BigNumberish | null
+    ): TypedEventFilter<[BigNumber], { _burningFee: BigNumber }>;
+
+    ChangeIntervalSet(
+      _changeInterval?: BigNumberish | null
+    ): TypedEventFilter<[BigNumber], { _changeInterval: BigNumber }>;
+
     Claim(user?: string | null): TypedEventFilter<[string], { user: string }>;
 
     CreateCommit(
       user?: string | null,
-      amount?: BigNumberish | null,
+      amount?: null,
       commitType?: BigNumberish | null,
-      appropriateUpdateIntervalId?: null,
+      appropriateUpdateIntervalId?: BigNumberish | null,
+      fromAggregateBalance?: null,
+      payForClaim?: null,
       mintingFee?: null
     ): TypedEventFilter<
-      [string, BigNumber, number, BigNumber, string],
+      [string, BigNumber, number, BigNumber, boolean, boolean, string],
       {
         user: string;
         amount: BigNumber;
         commitType: number;
         appropriateUpdateIntervalId: BigNumber;
+        fromAggregateBalance: boolean;
+        payForClaim: boolean;
         mintingFee: string;
       }
     >;
@@ -948,10 +1087,24 @@ export class PoolCommitter extends BaseContract {
       [BigNumber, string],
       { updateIntervalId: BigNumber; burningFee: string }
     >;
+
+    FeeControllerSet(
+      _feeController?: string | null
+    ): TypedEventFilter<[string], { _feeController: string }>;
+
+    MintingFeeSet(
+      _mintingFee?: BigNumberish | null
+    ): TypedEventFilter<[BigNumber], { _mintingFee: BigNumber }>;
+
+    Paused(): TypedEventFilter<[], {}>;
+
+    Unpaused(): TypedEventFilter<[], {}>;
   };
 
   estimateGas: {
     LONG_INDEX(overrides?: CallOverrides): Promise<BigNumber>;
+
+    MAX_ITERATIONS(overrides?: CallOverrides): Promise<BigNumber>;
 
     SHORT_INDEX(overrides?: CallOverrides): Promise<BigNumber>;
 
@@ -961,6 +1114,10 @@ export class PoolCommitter extends BaseContract {
       arg0: BigNumberish,
       overrides?: CallOverrides
     ): Promise<BigNumber>;
+
+    burningFee(overrides?: CallOverrides): Promise<BigNumber>;
+
+    changeInterval(overrides?: CallOverrides): Promise<BigNumber>;
 
     claim(
       user: string,
@@ -976,10 +1133,16 @@ export class PoolCommitter extends BaseContract {
     ): Promise<BigNumber>;
 
     executeCommitments(
+      lastPriceTimestamp: BigNumberish,
+      updateInterval: BigNumberish,
+      longBalance: BigNumberish,
+      shortBalance: BigNumberish,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<BigNumber>;
 
     factory(overrides?: CallOverrides): Promise<BigNumber>;
+
+    feeController(overrides?: CallOverrides): Promise<BigNumber>;
 
     getAggregateBalance(
       user: string,
@@ -990,22 +1153,25 @@ export class PoolCommitter extends BaseContract {
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
-    getPendingCommits(overrides?: CallOverrides): Promise<BigNumber>;
+    getBurningFee(overrides?: CallOverrides): Promise<BigNumber>;
+
+    getMintingFee(overrides?: CallOverrides): Promise<BigNumber>;
 
     governance(overrides?: CallOverrides): Promise<BigNumber>;
 
     initialize(
       _factory: string,
-      _invariantCheckContract: string,
       _autoClaim: string,
+      _factoryOwner: string,
+      _feeController: string,
+      _invariantCheck: string,
       _mintingFee: BigNumberish,
       _burningFee: BigNumberish,
+      _changeInterval: BigNumberish,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<BigNumber>;
 
     invariantCheck(overrides?: CallOverrides): Promise<BigNumber>;
-
-    invariantCheckContract(overrides?: CallOverrides): Promise<BigNumber>;
 
     lastUpdatedIntervalId(
       arg0: string,
@@ -1014,19 +1180,46 @@ export class PoolCommitter extends BaseContract {
 
     leveragedPool(overrides?: CallOverrides): Promise<BigNumber>;
 
+    mintingFee(overrides?: CallOverrides): Promise<BigNumber>;
+
     pause(
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<BigNumber>;
 
     paused(overrides?: CallOverrides): Promise<BigNumber>;
 
+    pendingLongBurnPoolTokens(overrides?: CallOverrides): Promise<BigNumber>;
+
+    pendingMintSettlementAmount(overrides?: CallOverrides): Promise<BigNumber>;
+
+    pendingShortBurnPoolTokens(overrides?: CallOverrides): Promise<BigNumber>;
+
     priceHistory(
       arg0: BigNumberish,
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
-    setQuoteAndPool(
-      _quoteToken: string,
+    setBurningFee(
+      _burningFee: BigNumberish,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<BigNumber>;
+
+    setChangeInterval(
+      _changeInterval: BigNumberish,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<BigNumber>;
+
+    setFeeController(
+      _feeController: string,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<BigNumber>;
+
+    setMintingFee(
+      _mintingFee: BigNumberish,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<BigNumber>;
+
+    setPool(
       _leveragedPool: string,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<BigNumber>;
@@ -1070,6 +1263,8 @@ export class PoolCommitter extends BaseContract {
   populateTransaction: {
     LONG_INDEX(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
+    MAX_ITERATIONS(overrides?: CallOverrides): Promise<PopulatedTransaction>;
+
     SHORT_INDEX(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
     autoClaim(overrides?: CallOverrides): Promise<PopulatedTransaction>;
@@ -1078,6 +1273,10 @@ export class PoolCommitter extends BaseContract {
       arg0: BigNumberish,
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
+
+    burningFee(overrides?: CallOverrides): Promise<PopulatedTransaction>;
+
+    changeInterval(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
     claim(
       user: string,
@@ -1093,10 +1292,16 @@ export class PoolCommitter extends BaseContract {
     ): Promise<PopulatedTransaction>;
 
     executeCommitments(
+      lastPriceTimestamp: BigNumberish,
+      updateInterval: BigNumberish,
+      longBalance: BigNumberish,
+      shortBalance: BigNumberish,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<PopulatedTransaction>;
 
     factory(overrides?: CallOverrides): Promise<PopulatedTransaction>;
+
+    feeController(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
     getAggregateBalance(
       user: string,
@@ -1107,24 +1312,25 @@ export class PoolCommitter extends BaseContract {
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 
-    getPendingCommits(overrides?: CallOverrides): Promise<PopulatedTransaction>;
+    getBurningFee(overrides?: CallOverrides): Promise<PopulatedTransaction>;
+
+    getMintingFee(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
     governance(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
     initialize(
       _factory: string,
-      _invariantCheckContract: string,
       _autoClaim: string,
+      _factoryOwner: string,
+      _feeController: string,
+      _invariantCheck: string,
       _mintingFee: BigNumberish,
       _burningFee: BigNumberish,
+      _changeInterval: BigNumberish,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<PopulatedTransaction>;
 
     invariantCheck(overrides?: CallOverrides): Promise<PopulatedTransaction>;
-
-    invariantCheckContract(
-      overrides?: CallOverrides
-    ): Promise<PopulatedTransaction>;
 
     lastUpdatedIntervalId(
       arg0: string,
@@ -1133,19 +1339,52 @@ export class PoolCommitter extends BaseContract {
 
     leveragedPool(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
+    mintingFee(overrides?: CallOverrides): Promise<PopulatedTransaction>;
+
     pause(
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<PopulatedTransaction>;
 
     paused(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
+    pendingLongBurnPoolTokens(
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
+
+    pendingMintSettlementAmount(
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
+
+    pendingShortBurnPoolTokens(
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
+
     priceHistory(
       arg0: BigNumberish,
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 
-    setQuoteAndPool(
-      _quoteToken: string,
+    setBurningFee(
+      _burningFee: BigNumberish,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<PopulatedTransaction>;
+
+    setChangeInterval(
+      _changeInterval: BigNumberish,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<PopulatedTransaction>;
+
+    setFeeController(
+      _feeController: string,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<PopulatedTransaction>;
+
+    setMintingFee(
+      _mintingFee: BigNumberish,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<PopulatedTransaction>;
+
+    setPool(
       _leveragedPool: string,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<PopulatedTransaction>;

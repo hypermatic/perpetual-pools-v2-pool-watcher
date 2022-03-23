@@ -118,28 +118,28 @@ describe('PoolWatcher calculatePoolState', () => {
     });
 
     const mockPendingCommits = [{
-      longMintAmount: new BigNumber(actualEthers.utils.parseUnits('1000', 18).toString()),
-      longBurnAmount: new BigNumber(actualEthers.utils.parseUnits('500', 18).toString()),
-      shortMintAmount: new BigNumber(actualEthers.utils.parseUnits('1000', 18).toString()),
-      shortBurnAmount: new BigNumber(0),
-      shortBurnLongMintAmount: new BigNumber(0),
-      longBurnShortMintAmount: new BigNumber(0),
+      longMintSettlement: new BigNumber(actualEthers.utils.parseUnits('1000', 18).toString()),
+      longBurnPoolTokens: new BigNumber(actualEthers.utils.parseUnits('500', 18).toString()),
+      shortMintSettlement: new BigNumber(actualEthers.utils.parseUnits('1000', 18).toString()),
+      shortBurnPoolTokens: new BigNumber(0),
+      shortBurnLongMintPoolTokens: new BigNumber(0),
+      longBurnShortMintPoolTokens: new BigNumber(0),
       updateIntervalId: new BigNumber(1)
     }, {
-      longMintAmount: new BigNumber(actualEthers.utils.parseUnits('1500', 18).toString()),
-      longBurnAmount: new BigNumber(actualEthers.utils.parseUnits('1000', 18).toString()),
-      shortMintAmount: new BigNumber(0),
-      shortBurnAmount: new BigNumber(actualEthers.utils.parseUnits('1000', 18).toString()),
-      shortBurnLongMintAmount: new BigNumber(0),
-      longBurnShortMintAmount: new BigNumber(0),
+      longMintSettlement: new BigNumber(actualEthers.utils.parseUnits('1500', 18).toString()),
+      longBurnPoolTokens: new BigNumber(actualEthers.utils.parseUnits('1000', 18).toString()),
+      shortMintSettlement: new BigNumber(0),
+      shortBurnPoolTokens: new BigNumber(actualEthers.utils.parseUnits('1000', 18).toString()),
+      shortBurnLongMintPoolTokens: new BigNumber(0),
+      longBurnShortMintPoolTokens: new BigNumber(0),
       updateIntervalId: new BigNumber(1)
     }, {
-      longMintAmount: new BigNumber(actualEthers.utils.parseUnits('500', 18).toString()),
-      longBurnAmount: new BigNumber(0),
-      shortMintAmount: new BigNumber(0),
-      shortBurnAmount: new BigNumber(actualEthers.utils.parseUnits('500', 18).toString()),
-      shortBurnLongMintAmount: new BigNumber(actualEthers.utils.parseUnits('1000', 18).toString()),
-      longBurnShortMintAmount: new BigNumber(actualEthers.utils.parseUnits('1000', 18).toString()),
+      longMintSettlement: new BigNumber(actualEthers.utils.parseUnits('500', 18).toString()),
+      longBurnPoolTokens: new BigNumber(0),
+      shortMintSettlement: new BigNumber(0),
+      shortBurnPoolTokens: new BigNumber(actualEthers.utils.parseUnits('500', 18).toString()),
+      shortBurnLongMintPoolTokens: new BigNumber(actualEthers.utils.parseUnits('1000', 18).toString()),
+      longBurnShortMintPoolTokens: new BigNumber(actualEthers.utils.parseUnits('1000', 18).toString()),
       updateIntervalId: new BigNumber(1)
     }];
 
@@ -185,18 +185,18 @@ describe('PoolWatcher calculatePoolState', () => {
     const interval1ShortBalance = currentShortBalance.plus(interval1ShortValueTransfer);
     const interval1LongBalance = currentLongBalance.plus(interval1LongValueTransfer);
 
-    const interval1ShortPrice = interval1ShortBalance.div(currentShortSupply.plus(pendingCommits[0].shortBurnAmount));
-    const interval1LongPrice = interval1LongBalance.div(currentLongSupply.plus(pendingCommits[0].longBurnAmount));
+    const interval1ShortPrice = interval1ShortBalance.div(currentShortSupply.plus(pendingCommits[0].shortBurnPoolTokens));
+    const interval1LongPrice = interval1LongBalance.div(currentLongSupply.plus(pendingCommits[0].longBurnPoolTokens));
 
-    const interval1ShortBalanceChange = pendingCommits[0].shortMintAmount
-      .minus(pendingCommits[0].shortBurnAmount.times(interval1ShortPrice));
-    const interval1LongBalanceChange = pendingCommits[0].longMintAmount
-      .minus(pendingCommits[0].longBurnAmount.times(interval1LongPrice));
+    const interval1ShortBalanceChange = pendingCommits[0].shortMintSettlement
+      .minus(pendingCommits[0].shortBurnPoolTokens.times(interval1ShortPrice));
+    const interval1LongBalanceChange = pendingCommits[0].longMintSettlement
+      .minus(pendingCommits[0].longBurnPoolTokens.times(interval1LongPrice));
 
-    const interval1ShortSupplyChange = pendingCommits[0].shortMintAmount.div(interval1ShortPrice)
-      .minus(pendingCommits[0].shortBurnAmount);
-    const interval1LongSupplyChange = pendingCommits[0].longMintAmount.div(interval1LongPrice)
-      .minus(pendingCommits[0].longBurnAmount);
+    const interval1ShortSupplyChange = pendingCommits[0].shortMintSettlement.div(interval1ShortPrice)
+      .minus(pendingCommits[0].shortBurnPoolTokens);
+    const interval1LongSupplyChange = pendingCommits[0].longMintSettlement.div(interval1LongPrice)
+      .minus(pendingCommits[0].longBurnPoolTokens);
 
     _lastOraclePrice = _expectedOraclePrice;
     _expectedOraclePrice = spotOracleTransformer(_lastOraclePrice, _expectedOraclePrice);
@@ -223,19 +223,19 @@ describe('PoolWatcher calculatePoolState', () => {
     const interval2ShortBalance = interval1FinalShortBalance.plus(interval2ShortValueTransfer);
     const interval2LongBalance = interval1FinalLongBalance.plus(interval2LongValueTransfer);
 
-    const interval2ShortPrice = interval2ShortBalance.div(interval1FinalShortSupply.plus(pendingCommits[1].shortBurnAmount));
-    const interval2LongPrice = interval2LongBalance.div(interval1FinalLongSupply.plus(pendingCommits[1].longBurnAmount));
+    const interval2ShortPrice = interval2ShortBalance.div(interval1FinalShortSupply.plus(pendingCommits[1].shortBurnPoolTokens));
+    const interval2LongPrice = interval2LongBalance.div(interval1FinalLongSupply.plus(pendingCommits[1].longBurnPoolTokens));
 
-    const interval2ShortBalanceChange = pendingCommits[1].shortMintAmount
-      .minus(pendingCommits[1].shortBurnAmount.times(interval2ShortPrice));
-    const interval2LongBalanceChange = pendingCommits[1].longMintAmount
-      .minus(pendingCommits[1].longBurnAmount.times(interval2LongPrice));
+    const interval2ShortBalanceChange = pendingCommits[1].shortMintSettlement
+      .minus(pendingCommits[1].shortBurnPoolTokens.times(interval2ShortPrice));
+    const interval2LongBalanceChange = pendingCommits[1].longMintSettlement
+      .minus(pendingCommits[1].longBurnPoolTokens.times(interval2LongPrice));
 
-    const interval2ShortSupplyChange = pendingCommits[1].shortMintAmount.div(interval2ShortPrice)
-      .minus(pendingCommits[1].shortBurnAmount);
+    const interval2ShortSupplyChange = pendingCommits[1].shortMintSettlement.div(interval2ShortPrice)
+      .minus(pendingCommits[1].shortBurnPoolTokens);
 
-    const interval2LongSupplyChange = pendingCommits[1].longMintAmount.div(interval2LongPrice)
-      .minus(pendingCommits[1].longBurnAmount);
+    const interval2LongSupplyChange = pendingCommits[1].longMintSettlement.div(interval2LongPrice)
+      .minus(pendingCommits[1].longBurnPoolTokens);
 
     _lastOraclePrice = _expectedOraclePrice;
     _expectedOraclePrice = spotOracleTransformer(_lastOraclePrice, _expectedOraclePrice);
@@ -263,37 +263,37 @@ describe('PoolWatcher calculatePoolState', () => {
     const interval3LongBalance = interval2FinalLongBalance.plus(interval3LongValueTransfer);
 
     const interval3ShortPrice = interval3ShortBalance.div(
-      interval2FinalShortSupply.plus(pendingCommits[2].shortBurnAmount).plus(pendingCommits[2].shortBurnLongMintAmount)
+      interval2FinalShortSupply.plus(pendingCommits[2].shortBurnPoolTokens).plus(pendingCommits[2].shortBurnLongMintPoolTokens)
     );
     const interval3LongPrice = interval3LongBalance.div(
-      interval2FinalLongSupply.plus(pendingCommits[2].longBurnAmount).plus(pendingCommits[2].longBurnShortMintAmount)
+      interval2FinalLongSupply.plus(pendingCommits[2].longBurnPoolTokens).plus(pendingCommits[2].longBurnShortMintPoolTokens)
     );
 
     // balance change = mint amount + mint amount from flips - burn result - burn result from flips
-    const interval3ShortBalanceChange = pendingCommits[2].shortMintAmount
-      .plus(pendingCommits[2].longBurnShortMintAmount.times(interval3LongPrice))
-      .minus(pendingCommits[2].shortBurnAmount.times(interval3ShortPrice))
-      .minus(pendingCommits[2].shortBurnLongMintAmount.times(interval3ShortPrice));
+    const interval3ShortBalanceChange = pendingCommits[2].shortMintSettlement
+      .plus(pendingCommits[2].longBurnShortMintPoolTokens.times(interval3LongPrice))
+      .minus(pendingCommits[2].shortBurnPoolTokens.times(interval3ShortPrice))
+      .minus(pendingCommits[2].shortBurnLongMintPoolTokens.times(interval3ShortPrice));
 
-    const interval3LongBalanceChange = pendingCommits[2].longMintAmount
-      .plus(pendingCommits[2].shortBurnLongMintAmount.times(interval3ShortPrice))
-      .minus(pendingCommits[2].longBurnAmount.times(interval3LongPrice))
-      .minus(pendingCommits[2].longBurnShortMintAmount.times(interval3LongPrice));
+    const interval3LongBalanceChange = pendingCommits[2].longMintSettlement
+      .plus(pendingCommits[2].shortBurnLongMintPoolTokens.times(interval3ShortPrice))
+      .minus(pendingCommits[2].longBurnPoolTokens.times(interval3LongPrice))
+      .minus(pendingCommits[2].longBurnShortMintPoolTokens.times(interval3LongPrice));
 
     // supply change = mint result + mint result from flip - burn amount - burn result from flips
-    const interval3ShortSupplyChange = pendingCommits[2].shortMintAmount.plus(
-      pendingCommits[2].longBurnShortMintAmount.times(interval3LongPrice)
+    const interval3ShortSupplyChange = pendingCommits[2].shortMintSettlement.plus(
+      pendingCommits[2].longBurnShortMintPoolTokens.times(interval3LongPrice)
     )
       .div(interval3ShortPrice)
-      .minus(pendingCommits[2].shortBurnAmount)
-      .minus(pendingCommits[2].shortBurnLongMintAmount);
+      .minus(pendingCommits[2].shortBurnPoolTokens)
+      .minus(pendingCommits[2].shortBurnLongMintPoolTokens);
 
-    const interval3LongSupplyChange = pendingCommits[2].longMintAmount.plus(
-      pendingCommits[2].shortBurnLongMintAmount.times(interval3ShortPrice)
+    const interval3LongSupplyChange = pendingCommits[2].longMintSettlement.plus(
+      pendingCommits[2].shortBurnLongMintPoolTokens.times(interval3ShortPrice)
     )
       .div(interval3LongPrice)
-      .minus(pendingCommits[2].longBurnAmount)
-      .minus(pendingCommits[2].longBurnShortMintAmount);
+      .minus(pendingCommits[2].longBurnPoolTokens)
+      .minus(pendingCommits[2].longBurnShortMintPoolTokens);
 
     _lastOraclePrice = _expectedOraclePrice;
     _expectedOraclePrice = spotOracleTransformer(_lastOraclePrice, _expectedOraclePrice);
@@ -330,28 +330,28 @@ describe('PoolWatcher calculatePoolState', () => {
     });
 
     const mockPendingCommits = [{
-      longMintAmount: new BigNumber(actualEthers.utils.parseUnits('1000', 18).toString()),
-      longBurnAmount: new BigNumber(actualEthers.utils.parseUnits('500', 18).toString()),
-      shortMintAmount: new BigNumber(actualEthers.utils.parseUnits('1000', 18).toString()),
-      shortBurnAmount: new BigNumber(0),
-      shortBurnLongMintAmount: new BigNumber(0),
-      longBurnShortMintAmount: new BigNumber(0),
+      longMintSettlement: new BigNumber(actualEthers.utils.parseUnits('1000', 18).toString()),
+      longBurnPoolTokens: new BigNumber(actualEthers.utils.parseUnits('500', 18).toString()),
+      shortMintSettlement: new BigNumber(actualEthers.utils.parseUnits('1000', 18).toString()),
+      shortBurnPoolTokens: new BigNumber(0),
+      shortBurnLongMintPoolTokens: new BigNumber(0),
+      longBurnShortMintPoolTokens: new BigNumber(0),
       updateIntervalId: new BigNumber(1)
     }, {
-      longMintAmount: new BigNumber(actualEthers.utils.parseUnits('1500', 18).toString()),
-      longBurnAmount: new BigNumber(actualEthers.utils.parseUnits('1000', 18).toString()),
-      shortMintAmount: new BigNumber(0),
-      shortBurnAmount: new BigNumber(actualEthers.utils.parseUnits('1000', 18).toString()),
-      shortBurnLongMintAmount: new BigNumber(0),
-      longBurnShortMintAmount: new BigNumber(0),
+      longMintSettlement: new BigNumber(actualEthers.utils.parseUnits('1500', 18).toString()),
+      longBurnPoolTokens: new BigNumber(actualEthers.utils.parseUnits('1000', 18).toString()),
+      shortMintSettlement: new BigNumber(0),
+      shortBurnPoolTokens: new BigNumber(actualEthers.utils.parseUnits('1000', 18).toString()),
+      shortBurnLongMintPoolTokens: new BigNumber(0),
+      longBurnShortMintPoolTokens: new BigNumber(0),
       updateIntervalId: new BigNumber(1)
     }, {
-      longMintAmount: new BigNumber(actualEthers.utils.parseUnits('500', 18).toString()),
-      longBurnAmount: new BigNumber(0),
-      shortMintAmount: new BigNumber(0),
-      shortBurnAmount: new BigNumber(actualEthers.utils.parseUnits('500', 18).toString()),
-      shortBurnLongMintAmount: new BigNumber(actualEthers.utils.parseUnits('1000', 18).toString()),
-      longBurnShortMintAmount: new BigNumber(actualEthers.utils.parseUnits('1000', 18).toString()),
+      longMintSettlement: new BigNumber(actualEthers.utils.parseUnits('500', 18).toString()),
+      longBurnPoolTokens: new BigNumber(0),
+      shortMintSettlement: new BigNumber(0),
+      shortBurnPoolTokens: new BigNumber(actualEthers.utils.parseUnits('500', 18).toString()),
+      shortBurnLongMintPoolTokens: new BigNumber(actualEthers.utils.parseUnits('1000', 18).toString()),
+      longBurnShortMintPoolTokens: new BigNumber(actualEthers.utils.parseUnits('1000', 18).toString()),
       updateIntervalId: new BigNumber(1)
     }];
 

@@ -20,12 +20,12 @@ export const constructorDefaults = {
 
 export const getMockPendingCommits = (overrides?: Partial<TotalPoolCommitmentsBN>): TotalPoolCommitmentsBN => {
   return {
-    longMintAmount: new BigNumber(0),
-    longBurnAmount: new BigNumber(0),
-    shortMintAmount: new BigNumber(0),
-    shortBurnAmount: new BigNumber(0),
-    shortBurnLongMintAmount: new BigNumber(0),
-    longBurnShortMintAmount: new BigNumber(0),
+    longMintSettlement: new BigNumber(0),
+    longBurnPoolTokens: new BigNumber(0),
+    shortMintSettlement: new BigNumber(0),
+    shortBurnPoolTokens: new BigNumber(0),
+    shortBurnLongMintPoolTokens: new BigNumber(0),
+    longBurnShortMintPoolTokens: new BigNumber(0),
     updateIntervalId: new BigNumber(1),
     ...overrides
   };
@@ -51,7 +51,7 @@ export const mockPoolData = {
   updateInterval: 300,
   leverageAmount: '3',
   frontRunningInterval: 30,
-  quoteToken: '0x3ebDcefA6a4721a61c7BB6047fe9ca0214985798',
+  settlementToken: '0x3ebDcefA6a4721a61c7BB6047fe9ca0214985798',
   longToken: '0xD43519F7D604d0c486D90d1aCE38235d432874f1',
   shortToken: '0x4aDe19AF0f3d1b3C10015fA4B353962DD805e0f6',
   lastPriceTimestamp: actualEthers.BigNumber.from(1644496867)
@@ -68,12 +68,12 @@ export const emptyTotalPoolCommitments = () => {
     new BigNumber(0)
   ];
 
-  totalPoolCommitments.longMintAmount = new BigNumber(0);
-  totalPoolCommitments.longBurnAmount = new BigNumber(0);
-  totalPoolCommitments.shortMintAmount = new BigNumber(0);
-  totalPoolCommitments.shortBurnAmount = new BigNumber(0);
-  totalPoolCommitments.shortBurnLongMintAmount = new BigNumber(0);
-  totalPoolCommitments.longBurnShortMintAmount = new BigNumber(0);
+  totalPoolCommitments.longMintSettlement = new BigNumber(0);
+  totalPoolCommitments.longBurnPoolTokens = new BigNumber(0);
+  totalPoolCommitments.shortMintSettlement = new BigNumber(0);
+  totalPoolCommitments.shortBurnPoolTokens = new BigNumber(0);
+  totalPoolCommitments.shortBurnLongMintPoolTokens = new BigNumber(0);
+  totalPoolCommitments.longBurnShortMintPoolTokens = new BigNumber(0);
   totalPoolCommitments.updateIntervalId = new BigNumber(0);
   return totalPoolCommitments;
 };
@@ -98,7 +98,7 @@ export const getInitializedMockPoolWatcher = async ({
     updateInterval: async () => _mockPoolData?.updateInterval || mockPoolData.updateInterval,
     leverageAmount: async () => _mockPoolData?.leverageAmount || mockPoolData.leverageAmount,
     frontRunningInterval: async () => _mockPoolData?.frontRunningInterval || mockPoolData.frontRunningInterval,
-    quoteToken: async () => _mockPoolData?.quoteToken || mockPoolData.quoteToken,
+    settlementToken: async () => _mockPoolData?.settlementToken || mockPoolData.settlementToken,
     tokens: async (index: number) => index === 0
       ? _mockPoolData?.longToken || mockPoolData.longToken
       : _mockPoolData?.shortToken || mockPoolData.shortToken,

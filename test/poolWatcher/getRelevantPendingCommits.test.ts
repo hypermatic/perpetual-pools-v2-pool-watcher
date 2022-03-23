@@ -46,13 +46,13 @@ describe('PoolWatcher getRelevantPendingCommits', () => {
       mockPoolCommitterFactory
     });
 
-    const getPendingCommitsSpy = jest.spyOn(poolWatcher.watchedPool.committerInstance, 'getPendingCommits');
+    const getPendingCommitsSpy = jest.spyOn(poolWatcher.watchedPool.committerInstance, 'totalPoolCommitments');
 
     const pendingCommits = await poolWatcher.getRelevantPendingCommits();
 
     expect(pendingCommits.length).toEqual(1);
     // single call with no arguments
-    expect(getPendingCommitsSpy.mock.calls).toEqual([[]]);
+    expect(getPendingCommitsSpy.mock.calls).toEqual([[1]]);
   });
 
   test('[frontRunningInterval == updateInterval] fetches pending commits for the next 2 intervals', async () => {
