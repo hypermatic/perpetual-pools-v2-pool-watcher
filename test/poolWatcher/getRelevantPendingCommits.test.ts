@@ -6,11 +6,6 @@ import {
   jest,
   beforeEach
 } from '@jest/globals';
-import BigNumber from 'bignumber.js';
-
-import {
-  calcNextValueTransfer
-} from '@tracer-protocol/pools-js';
 
 import {
   LeveragedPool__factory,
@@ -20,15 +15,10 @@ import {
 
 import {
   constructorDefaults,
-  getMockPendingCommits,
-  expectedStateInputDefaults,
   getInitializedMockPoolWatcher
 } from '../_mockData';
 
 import { PoolWatcherConstructorArgs } from '../../src/types';
-
-import type { ethers } from 'ethers';
-const actualEthers = jest.requireActual('ethers') as typeof ethers;
 
 jest.mock('ethers');
 jest.mock('../../src/typesV2'); ;
