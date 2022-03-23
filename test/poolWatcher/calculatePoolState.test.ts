@@ -103,7 +103,6 @@ describe('PoolWatcher calculatePoolState', () => {
     expect(expectedShortTokenPrice).toEqual(expectedShortBalance.div(expectedShortSupply));
 
     expect(pendingCommits).toEqual(expectedStateInputDefaults.pendingCommits);
-    console.log('bro');
   });
 
   test('[3 intervals - spot oracle] calculates state with pending commits', async () => {
