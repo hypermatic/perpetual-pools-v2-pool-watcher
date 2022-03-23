@@ -55,7 +55,7 @@ export class PoolWatcher extends TypedEmitter<PoolWatcherEvents> {
   poolAddress: string
   chainId: string
   commitmentWindowBuffer: number
-  private isWatching: boolean
+  isWatching: boolean
   oraclePriceTransformer: (lastPrice: BigNumber, currentPrice: BigNumber) => BigNumber
 
   constructor (args: PoolWatcherConstructorArgs) {
@@ -256,7 +256,7 @@ export class PoolWatcher extends TypedEmitter<PoolWatcherEvents> {
     let expectedShortTokenPrice = expectedShortBalance.div(expectedShortSupply);
 
     let movingOraclePriceBefore = lastOraclePrice;
-    let movingOraclePriceAfter = this.oraclePriceTransformer(movingOraclePriceBefore, currentOraclePrice);
+    let movingOraclePriceAfter = lastOraclePrice;
 
     for (const pendingCommit of pendingCommits) {
       const {
@@ -268,17 +268,17 @@ export class PoolWatcher extends TypedEmitter<PoolWatcherEvents> {
         shortMintAmount
       } = pendingCommit;
 
+      // apply price transformations to emulate underlying oracle wrapper implementation
+      movingOraclePriceBefore = movingOraclePriceAfter;
+      movingOraclePriceAfter = this.oraclePriceTransformer(movingOraclePriceBefore, currentOraclePrice);
+
       const { longValueTransfer, shortValueTransfer } = calcNextValueTransfer(
         movingOraclePriceBefore,
         movingOraclePriceAfter,
         new BigNumber(leverage),
-        longBalance,
-        shortBalance
+        expectedLongBalance,
+        expectedShortBalance
       );
-
-      // apply price transformations to emulate underlying oracle wrapper implementation
-      movingOraclePriceBefore = movingOraclePriceAfter;
-      movingOraclePriceAfter = this.oraclePriceTransformer(movingOraclePriceBefore, currentOraclePrice);
 
       // balances immediately before commits executed
       expectedLongBalance = expectedLongBalance.plus(longValueTransfer);
