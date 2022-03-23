@@ -68,12 +68,13 @@ main();
 
 # Constructor Config
 
-| Name                   | Type   | Description                                                                                | Required |
-|------------------------|--------|--------------------------------------------------------------------------------------------|----------|
-| nodeUrl                | string | url of provider, **websocket provider recommended**                                        | true     |
-| poolAddress            | string | address of pool to watch                                                                   | true     |
-| chainId                | string | chainId of network, only arbitrum networks are supported                                   | true     |
-| commitmentWindowBuffer | string | number of seconds before end of commitment window to emit `COMMITMENT_WINDOW_ENDING` event | true     |
+| Name                   | Type                                                     | Description                                                                                | Required |
+|------------------------|----------------------------------------------------------|--------------------------------------------------------------------------------------------|----------|
+| nodeUrl                | string                                                   | url of provider, **websocket provider recommended**                                        | true     |
+| poolAddress            | string                                                   | address of pool to watch                                                                   | true     |
+| chainId                | string                                                   | chainId of network, only arbitrum networks are supported                                   | true     |
+| commitmentWindowBuffer | string                                                   | number of seconds before end of commitment window to emit `COMMITMENT_WINDOW_ENDING` event | true     |
+| oraclePriceTransformer | (ethers.BigNumber, ethers.BigNumber) => ethers.BigNumber | price transformation function, used to emulate contract behaviour                          | false    |
 
 # Events
 
@@ -87,24 +88,26 @@ Since `frontRunningInterval` is timestamp based, it is advised to give yourself 
 to account for unpredictable block timestamps in arbitrum.
 
 The following data containing the expected pool state will be passed into the callback of subscribed event listeners:
-| Name                        | Type        | Description                                                          |
-|-----------------------------|-------------|----------------------------------------------------------------------|
-| timestamp                   | number      | local unix timestamp when this expected state was calculated         |
-| appropriateUpdateIntervalId | number      | updateIntervalId which would be assigned to a commit created now     |
-| currentSkew                 | number      | current skew (before pending commits are applied in the next upkeep) |
-| currentLongBalance          | `BigNumber` | current collateral held by long side of the pool                     |
-| currentLongSupply           | `BigNumber` | current supply of long tokens                                        |
-| currentShortBalance         | `BigNumber` | current collateral held by short side of the pool                    |
-| currentShortSupply          | `BigNumber` | current supply of short tokens                                       |
-| expectedSkew                | number      | expected skew (after pending commits are applied in the next upkeep) |
-| expectedLongBalance         | `BigNumber` | expected collateral held by long side of the pool                    |
-| expectedLongSupply          | `BigNumber` | expected supply of long tokens                                       |
-| expectedShortBalance        | `BigNumber` | expected collateral held by short side of the pool                   |
-| expectedShortSupply         | `BigNumber` | expected supply of short tokens                                      |
-| totalNetPendingLong         | `BigNumber` | expected change in long side collateral held                         |
-| totalNetPendingShort        | `BigNumber` | expected change in short side collateral held                        |
-| expectedLongTokenPrice      | `BigNumber` | expected long token price after next upkeep                          |
-| expectedShortTokenPrice     | `BigNumber` | expected short token price after next upkeep                         |
+| Name                        | Type        | Description                                                                           |
+|-----------------------------|-------------|---------------------------------------------------------------------------------------|
+| timestamp                   | number      | local unix timestamp when this expected state was calculated                          |
+| currentSkew                 | `BigNumber` | current skew (before pending commits are applied in the next upkeep)                  |
+| currentLongBalance          | `BigNumber` | current collateral held by long side of the pool                                      |
+| currentLongSupply           | `BigNumber` | current supply of long tokens                                                         |
+| currentShortBalance         | `BigNumber` | current collateral held by short side of the pool                                     |
+| currentShortSupply          | `BigNumber` | current supply of short tokens                                                        |
+| expectedSkew                | `BigNumber` | expected skew (after pending commits are applied in the next upkeep)                  |
+| expectedLongBalance         | `BigNumber` | expected collateral held by long side of the pool                                     |
+| expectedLongSupply          | `BigNumber` | expected supply of long tokens                                                        |
+| expectedShortBalance        | `BigNumber` | expected collateral held by short side of the pool                                    |
+| expectedShortSupply         | `BigNumber` | expected supply of short tokens                                                       |
+| totalNetPendingLong         | `BigNumber` | expected change in long side collateral held                                          |
+| totalNetPendingShort        | `BigNumber` | expected change in short side collateral held                                         |
+| expectedLongTokenPrice      | `BigNumber` | expected long token price after next upkeep                                           |
+| expectedShortTokenPrice     | `BigNumber` | expected short token price after next upkeep                                          |
+| lastOraclePrice             | `BigNumber` | last reported oracle price                                                            |
+| expectedOraclePrice         | `BigNumber` | expected oracle price after applying oraclePriceTransformer for each expected interval|
+| pendingCommits              | `TotalPoolCommitmentsBN[]`| pending commits for each expected upcoming update interval              |
 
 ## UPKEEP
 
