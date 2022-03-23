@@ -14,7 +14,8 @@ import {
 
 import {
   LeveragedPool__factory,
-  PoolSwapLibrary__factory
+  PoolSwapLibrary__factory,
+  PoolCommitter__factory
 } from '../../src/typesV2';
 
 import {
@@ -34,6 +35,7 @@ jest.mock('../../src/typesV2'); ;
 
 const mockLeveragedPoolFactory = jest.mocked(LeveragedPool__factory, true);
 const mockPoolSwapLibraryFactory = jest.mocked(PoolSwapLibrary__factory, true);
+const mockPoolCommitterFactory = jest.mocked(PoolCommitter__factory, true);
 
 const spotOracleTransformer: PoolWatcherConstructorArgs['oraclePriceTransformer'] = (lastPrice, newPrice) => newPrice;
 
@@ -50,7 +52,8 @@ describe('PoolWatcher calculatePoolState', () => {
         oraclePriceTransformer: spotOracleTransformer
       },
       mockLeveragedPoolFactory,
-      mockPoolSwapLibraryFactory
+      mockPoolSwapLibraryFactory,
+      mockPoolCommitterFactory
     });
 
     const {
@@ -111,7 +114,8 @@ describe('PoolWatcher calculatePoolState', () => {
         oraclePriceTransformer: spotOracleTransformer
       },
       mockLeveragedPoolFactory,
-      mockPoolSwapLibraryFactory
+      mockPoolSwapLibraryFactory,
+      mockPoolCommitterFactory
     });
 
     const mockPendingCommits = [{
@@ -322,7 +326,8 @@ describe('PoolWatcher calculatePoolState', () => {
     const poolWatcher = await getInitializedMockPoolWatcher({
       constructorArgs: constructorDefaults,
       mockLeveragedPoolFactory,
-      mockPoolSwapLibraryFactory
+      mockPoolSwapLibraryFactory,
+      mockPoolCommitterFactory
     });
 
     const mockPendingCommits = [{
@@ -393,7 +398,8 @@ describe('PoolWatcher calculatePoolState', () => {
     const poolWatcher = await getInitializedMockPoolWatcher({
       constructorArgs: constructorDefaults,
       mockLeveragedPoolFactory,
-      mockPoolSwapLibraryFactory
+      mockPoolSwapLibraryFactory,
+      mockPoolCommitterFactory
     });
 
     const calculateStateInputs = {
