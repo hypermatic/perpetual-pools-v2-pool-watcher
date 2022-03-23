@@ -49,12 +49,12 @@ export const mockPoolData = {
   keeper: '0x015b7a809B18cf541A99596a29cd0dF81aE8f55e',
   poolCommitter: '0xa321c542a23f5173361f29c3809FAa74C25dAB46',
   updateInterval: 300,
-  leverageAmount: 3,
+  leverageAmount: '3',
   frontRunningInterval: 30,
   quoteToken: '0x3ebDcefA6a4721a61c7BB6047fe9ca0214985798',
   longToken: '0xD43519F7D604d0c486D90d1aCE38235d432874f1',
   shortToken: '0x4aDe19AF0f3d1b3C10015fA4B353962DD805e0f6',
-  lastPriceTimestamp: 1644496867
+  lastPriceTimestamp: actualEthers.BigNumber.from(1644496867)
 };
 
 export const emptyTotalPoolCommitments = () => {
