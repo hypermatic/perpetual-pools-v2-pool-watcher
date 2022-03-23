@@ -155,9 +155,9 @@ export class PoolWatcher extends TypedEmitter<PoolWatcherEvents> {
     })).toNumber();
 
     // the last update interval that will be executed in the frontrunning interval as of now
-    const maxIntervalId = updateIntervalId + upkeepsPerFrontRunningInterval - 1;
+    const maxIntervalId = updateIntervalId + upkeepsPerFrontRunningInterval;
 
-    for (let i = updateIntervalId; i < maxIntervalId; i++) {
+    for (let i = updateIntervalId; i <= maxIntervalId; i++) {
       pendingCommitPromises.push(attemptPromiseRecursively({
         promise: async () => {
           const pendingCommitsThisInterval = await committerInstance.totalPoolCommitments(i);
