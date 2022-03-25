@@ -136,7 +136,7 @@ The following data will be passed into the callback of subscribed event listener
 | commitType             | number      | raw commit type, one of {0, 1, 2, 3, 4, 5}                                                                      |
 | appropriateIntervalId  | number      | the update interval in which this commit will be executed                                                       |
 | payForClaim            | boolean     | true if requesting tokens are claimed on users behalf, false if tokens are to go into escrow (unclaimed balance)|
-| fromAggregateBalance   | number      | true if paying from unclaimed (escrow) balance, false if paying from wallet                                     |
+| fromAggregateBalance   | boolean     | true if paying from unclaimed (escrow) balance, false if paying from wallet                                     |
 | mintingFee             | string      | minting fee percentage at time of commit, 128 bit (quad precision) floating point encoded                       |
 | timestamp              | number      | unix timestamp of block where event was emitted                                                                 |
 | blockNumber            | number      | block number in which event was emitted                                                                         |

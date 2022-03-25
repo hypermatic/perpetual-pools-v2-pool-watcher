@@ -31,7 +31,6 @@
   },
   "dependencies": {
     "@tracer-protocol/pools-js": "^2.0.3",
-    "dotenv": "^10.0.0",
     "ethers": "5.5.1",
     "tiny-typed-emitter": "^2.1.0"
   },
