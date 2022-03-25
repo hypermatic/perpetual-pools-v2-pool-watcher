@@ -421,14 +421,18 @@ export class PoolWatcher extends TypedEmitter<PoolWatcherEvents> {
 
     const createCommitFilter = this.watchedPool.committerInstance.filters.CreateCommit();
 
-    this.watchedPool.committerInstance.on(createCommitFilter, (
+    this.watchedPool.committerInstance.on(createCommitFilter, async (
       user,
       amount,
       commitType,
       appropriateIntervalId,
       fromAggregateBalance,
       payForClaim,
-      mintingFee) => {
+      mintingFee,
+      event
+    ) => {
+      const block = await event.getBlock();
+
       this.emit(EVENT_NAMES.COMMIT, {
         user,
         amount: ethersBNtoBN(amount),
@@ -436,16 +440,30 @@ export class PoolWatcher extends TypedEmitter<PoolWatcherEvents> {
         appropriateIntervalId: appropriateIntervalId.toNumber(),
         fromAggregateBalance,
         payForClaim,
-        mintingFee
+        mintingFee,
+        txHash: event.transactionHash,
+        blockNumber: event.blockNumber,
+        timestamp: block.timestamp
       });
     });
 
-    this.watchedPool.keeperInstance.on(upkeepSuccessfulFilter, (poolAddress, data, startPrice, endPrice) => {
+    this.watchedPool.keeperInstance.on(upkeepSuccessfulFilter, async (
+      poolAddress,
+      data,
+      startPrice,
+      endPrice,
+      event
+    ) => {
+      const block = await event.getBlock();
+
       this.emit(EVENT_NAMES.UPKEEP, {
         poolAddress,
         data,
         startPrice: ethersBNtoBN(startPrice),
-        endPrice: ethersBNtoBN(endPrice)
+        endPrice: ethersBNtoBN(endPrice),
+        txHash: event.transactionHash,
+        blockNumber: event.blockNumber,
+        timestamp: block.timestamp
       });
     });
   }

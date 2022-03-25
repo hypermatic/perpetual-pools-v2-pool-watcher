@@ -17,14 +17,20 @@ export type CommitEventData = {
   appropriateIntervalId: number,
   payForClaim: boolean,
   fromAggregateBalance: boolean,
-  mintingFee: string
+  mintingFee: string,
+  timestamp: number,
+  blockNumber: number,
+  txHash: string
 }
 
 export type UpkeepEventData = {
   poolAddress: string,
   data: string,
   startPrice: BigNumber,
-  endPrice: BigNumber
+  endPrice: BigNumber,
+  timestamp: number,
+  blockNumber: number,
+  txHash: string
 }
 
 export type PoolWatcherConstructorArgs = {
