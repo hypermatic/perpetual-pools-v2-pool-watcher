@@ -6,6 +6,8 @@ import {
   jest,
   beforeEach
 } from '@jest/globals';
+import { ethers } from 'ethers';
+import BigNumber from 'bignumber.js';
 
 import {
   LeveragedPool__factory,
@@ -14,10 +16,8 @@ import {
   PoolSwapLibrary
 } from '../../src/typesV2';
 
-import { ethers } from 'ethers';
-import BigNumber from 'bignumber.js';
-
 import { PoolWatcher } from '../../src/PoolWatcher';
+import { constructorDefaults } from '../_mockData';
 
 jest.mock('ethers');
 jest.mock('../../src/typesV2'); ;
@@ -26,13 +26,6 @@ const mockedEthers = jest.mocked(ethers, true);
 const mockLeveragedPoolFactory = jest.mocked(LeveragedPool__factory, true);
 const mockPoolSwapLibraryFactory = jest.mocked(PoolSwapLibrary__factory, true);
 
-export const constructorTestDefaults = {
-  nodeUrl: 'https://rinkeby.arbitrum.io/rpc',
-  commitmentWindowBuffer: 10,
-  chainId: '421611',
-  poolAddress: '0xd9991942bc6d916a8c591f888e8e81fab4cc254d'
-};
-
 describe('PoolWatcher constructor', () => {
   beforeEach(() => {
     jest.resetAllMocks();
@@ -40,7 +33,7 @@ describe('PoolWatcher constructor', () => {
 
   test('it throws an error for unsupported chainId\'s', () => {
     expect(() => new PoolWatcher({
-      ...constructorTestDefaults,
+      ...constructorDefaults,
       chainId: 'wrong'
     })).toThrowError('unsupported chainId: wrong, supported values are [421611]');
   });
@@ -50,7 +43,7 @@ describe('PoolWatcher constructor', () => {
 
     mockedEthers.getDefaultProvider.mockReturnValueOnce(mockProvider);
 
-    const poolWatcher = new PoolWatcher(constructorTestDefaults);
+    const poolWatcher = new PoolWatcher(constructorDefaults);
 
     expect(poolWatcher.provider).toBe(mockProvider);
   });
@@ -60,7 +53,7 @@ describe('PoolWatcher constructor', () => {
 
     mockLeveragedPoolFactory.connect.mockReturnValueOnce(mockPoolInstance);
 
-    const poolWatcher = new PoolWatcher(constructorTestDefaults);
+    const poolWatcher = new PoolWatcher(constructorDefaults);
 
     expect(poolWatcher.poolInstance).toBe(mockPoolInstance);
   });
@@ -70,37 +63,37 @@ describe('PoolWatcher constructor', () => {
 
     mockPoolSwapLibraryFactory.connect.mockReturnValueOnce(mockPoolSwapLibrary);
 
-    const poolWatcher = new PoolWatcher(constructorTestDefaults);
+    const poolWatcher = new PoolWatcher(constructorDefaults);
 
     expect(poolWatcher.poolSwapLibrary).toBe(mockPoolSwapLibrary);
   });
 
   test('`this.poolAddress` is assigned the provided value', () => {
-    const poolWatcher = new PoolWatcher(constructorTestDefaults);
+    const poolWatcher = new PoolWatcher(constructorDefaults);
 
-    expect(poolWatcher.poolAddress).toEqual(constructorTestDefaults.poolAddress);
+    expect(poolWatcher.poolAddress).toEqual(constructorDefaults.poolAddress);
   });
 
   test('`this.chainId` is assigned the provided value', () => {
-    const poolWatcher = new PoolWatcher(constructorTestDefaults);
+    const poolWatcher = new PoolWatcher(constructorDefaults);
 
-    expect(poolWatcher.chainId).toEqual(constructorTestDefaults.chainId);
+    expect(poolWatcher.chainId).toEqual(constructorDefaults.chainId);
   });
 
   test('`this.watchedPool` starts as an empty object', () => {
-    const poolWatcher = new PoolWatcher(constructorTestDefaults);
+    const poolWatcher = new PoolWatcher(constructorDefaults);
 
     expect(poolWatcher.watchedPool).toEqual({});
   });
 
   test('`this.commitmentWindowBuffer` is assigned the correct address for the chainId', () => {
-    const poolWatcher = new PoolWatcher(constructorTestDefaults);
+    const poolWatcher = new PoolWatcher(constructorDefaults);
 
-    expect(poolWatcher.commitmentWindowBuffer).toEqual(constructorTestDefaults.commitmentWindowBuffer);
+    expect(poolWatcher.commitmentWindowBuffer).toEqual(constructorDefaults.commitmentWindowBuffer);
   });
 
   test('`this.isWatching` is false by default', () => {
-    const poolWatcher = new PoolWatcher(constructorTestDefaults);
+    const poolWatcher = new PoolWatcher(constructorDefaults);
 
     expect(poolWatcher.isWatching).toEqual(false);
   });
@@ -109,7 +102,7 @@ describe('PoolWatcher constructor', () => {
     const mockPriceTransformer = (lastPrice: BigNumber, currentPrice: BigNumber) => lastPrice.plus(currentPrice);
 
     const poolWatcher = new PoolWatcher({
-      ...constructorTestDefaults,
+      ...constructorDefaults,
       oraclePriceTransformer: mockPriceTransformer
     });
 

@@ -24,8 +24,10 @@ interface LeveragedPoolInterface extends ethers.utils.Interface {
     "LONG_INDEX()": FunctionFragment;
     "SHORT_INDEX()": FunctionFragment;
     "balances()": FunctionFragment;
-    "burnTokens(bool,uint256,address)": FunctionFragment;
+    "burnTokens(uint256,uint256,address)": FunctionFragment;
     "claimGovernance()": FunctionFragment;
+    "claimPrimaryFees()": FunctionFragment;
+    "claimSecondaryFees()": FunctionFragment;
     "fee()": FunctionFragment;
     "feeAddress()": FunctionFragment;
     "frontRunningInterval()": FunctionFragment;
@@ -36,12 +38,10 @@ interface LeveragedPoolInterface extends ethers.utils.Interface {
     "initialize(tuple)": FunctionFragment;
     "intervalPassed()": FunctionFragment;
     "invariantCheck()": FunctionFragment;
-    "invariantCheckContract()": FunctionFragment;
     "keeper()": FunctionFragment;
     "lastPriceTimestamp()": FunctionFragment;
     "leverageAmount()": FunctionFragment;
     "longBalance()": FunctionFragment;
-    "mintTokens(bool,uint256,address)": FunctionFragment;
     "oracleWrapper()": FunctionFragment;
     "pause()": FunctionFragment;
     "paused()": FunctionFragment;
@@ -51,15 +51,17 @@ interface LeveragedPoolInterface extends ethers.utils.Interface {
     "poolTokenTransfer(bool,address,uint256)": FunctionFragment;
     "poolTokens()": FunctionFragment;
     "poolUpkeep(int256,int256)": FunctionFragment;
+    "primaryFees()": FunctionFragment;
     "provisionalGovernance()": FunctionFragment;
-    "quoteToken()": FunctionFragment;
-    "quoteTokenTransfer(address,uint256)": FunctionFragment;
-    "quoteTokenTransferFrom(address,address,uint256)": FunctionFragment;
     "secondaryFeeAddress()": FunctionFragment;
     "secondaryFeeSplitPercent()": FunctionFragment;
+    "secondaryFees()": FunctionFragment;
     "setKeeper(address)": FunctionFragment;
     "setNewPoolBalances(uint256,uint256)": FunctionFragment;
     "settlementEthOracle()": FunctionFragment;
+    "settlementToken()": FunctionFragment;
+    "settlementTokenTransfer(address,uint256)": FunctionFragment;
+    "settlementTokenTransferFrom(address,address,uint256)": FunctionFragment;
     "shortBalance()": FunctionFragment;
     "tokens(uint256)": FunctionFragment;
     "transferGovernance(address)": FunctionFragment;
@@ -67,7 +69,7 @@ interface LeveragedPoolInterface extends ethers.utils.Interface {
     "updateFeeAddress(address)": FunctionFragment;
     "updateInterval()": FunctionFragment;
     "updateSecondaryFeeAddress(address)": FunctionFragment;
-    "withdrawQuote()": FunctionFragment;
+    "withdrawSettlement()": FunctionFragment;
   };
 
   encodeFunctionData(
@@ -81,10 +83,18 @@ interface LeveragedPoolInterface extends ethers.utils.Interface {
   encodeFunctionData(functionFragment: "balances", values?: undefined): string;
   encodeFunctionData(
     functionFragment: "burnTokens",
-    values: [boolean, BigNumberish, string]
+    values: [BigNumberish, BigNumberish, string]
   ): string;
   encodeFunctionData(
     functionFragment: "claimGovernance",
+    values?: undefined
+  ): string;
+  encodeFunctionData(
+    functionFragment: "claimPrimaryFees",
+    values?: undefined
+  ): string;
+  encodeFunctionData(
+    functionFragment: "claimSecondaryFees",
     values?: undefined
   ): string;
   encodeFunctionData(functionFragment: "fee", values?: undefined): string;
@@ -123,7 +133,7 @@ interface LeveragedPoolInterface extends ethers.utils.Interface {
         _longToken: string;
         _shortToken: string;
         _poolCommitter: string;
-        _invariantCheckContract: string;
+        _invariantCheck: string;
         _poolName: string;
         _frontRunningInterval: BigNumberish;
         _updateInterval: BigNumberish;
@@ -131,7 +141,7 @@ interface LeveragedPoolInterface extends ethers.utils.Interface {
         _fee: BigNumberish;
         _feeAddress: string;
         _secondaryFeeAddress: string;
-        _quoteToken: string;
+        _settlementToken: string;
         _secondaryFeeSplitPercent: BigNumberish;
       }
     ]
@@ -142,10 +152,6 @@ interface LeveragedPoolInterface extends ethers.utils.Interface {
   ): string;
   encodeFunctionData(
     functionFragment: "invariantCheck",
-    values?: undefined
-  ): string;
-  encodeFunctionData(
-    functionFragment: "invariantCheckContract",
     values?: undefined
   ): string;
   encodeFunctionData(functionFragment: "keeper", values?: undefined): string;
@@ -160,10 +166,6 @@ interface LeveragedPoolInterface extends ethers.utils.Interface {
   encodeFunctionData(
     functionFragment: "longBalance",
     values?: undefined
-  ): string;
-  encodeFunctionData(
-    functionFragment: "mintTokens",
-    values: [boolean, BigNumberish, string]
   ): string;
   encodeFunctionData(
     functionFragment: "oracleWrapper",
@@ -193,20 +195,12 @@ interface LeveragedPoolInterface extends ethers.utils.Interface {
     values: [BigNumberish, BigNumberish]
   ): string;
   encodeFunctionData(
+    functionFragment: "primaryFees",
+    values?: undefined
+  ): string;
+  encodeFunctionData(
     functionFragment: "provisionalGovernance",
     values?: undefined
-  ): string;
-  encodeFunctionData(
-    functionFragment: "quoteToken",
-    values?: undefined
-  ): string;
-  encodeFunctionData(
-    functionFragment: "quoteTokenTransfer",
-    values: [string, BigNumberish]
-  ): string;
-  encodeFunctionData(
-    functionFragment: "quoteTokenTransferFrom",
-    values: [string, string, BigNumberish]
   ): string;
   encodeFunctionData(
     functionFragment: "secondaryFeeAddress",
@@ -214,6 +208,10 @@ interface LeveragedPoolInterface extends ethers.utils.Interface {
   ): string;
   encodeFunctionData(
     functionFragment: "secondaryFeeSplitPercent",
+    values?: undefined
+  ): string;
+  encodeFunctionData(
+    functionFragment: "secondaryFees",
     values?: undefined
   ): string;
   encodeFunctionData(functionFragment: "setKeeper", values: [string]): string;
@@ -224,6 +222,18 @@ interface LeveragedPoolInterface extends ethers.utils.Interface {
   encodeFunctionData(
     functionFragment: "settlementEthOracle",
     values?: undefined
+  ): string;
+  encodeFunctionData(
+    functionFragment: "settlementToken",
+    values?: undefined
+  ): string;
+  encodeFunctionData(
+    functionFragment: "settlementTokenTransfer",
+    values: [string, BigNumberish]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "settlementTokenTransferFrom",
+    values: [string, string, BigNumberish]
   ): string;
   encodeFunctionData(
     functionFragment: "shortBalance",
@@ -251,7 +261,7 @@ interface LeveragedPoolInterface extends ethers.utils.Interface {
     values: [string]
   ): string;
   encodeFunctionData(
-    functionFragment: "withdrawQuote",
+    functionFragment: "withdrawSettlement",
     values?: undefined
   ): string;
 
@@ -264,6 +274,14 @@ interface LeveragedPoolInterface extends ethers.utils.Interface {
   decodeFunctionResult(functionFragment: "burnTokens", data: BytesLike): Result;
   decodeFunctionResult(
     functionFragment: "claimGovernance",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "claimPrimaryFees",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "claimSecondaryFees",
     data: BytesLike
   ): Result;
   decodeFunctionResult(functionFragment: "fee", data: BytesLike): Result;
@@ -294,10 +312,6 @@ interface LeveragedPoolInterface extends ethers.utils.Interface {
     functionFragment: "invariantCheck",
     data: BytesLike
   ): Result;
-  decodeFunctionResult(
-    functionFragment: "invariantCheckContract",
-    data: BytesLike
-  ): Result;
   decodeFunctionResult(functionFragment: "keeper", data: BytesLike): Result;
   decodeFunctionResult(
     functionFragment: "lastPriceTimestamp",
@@ -311,7 +325,6 @@ interface LeveragedPoolInterface extends ethers.utils.Interface {
     functionFragment: "longBalance",
     data: BytesLike
   ): Result;
-  decodeFunctionResult(functionFragment: "mintTokens", data: BytesLike): Result;
   decodeFunctionResult(
     functionFragment: "oracleWrapper",
     data: BytesLike
@@ -334,16 +347,11 @@ interface LeveragedPoolInterface extends ethers.utils.Interface {
   decodeFunctionResult(functionFragment: "poolTokens", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "poolUpkeep", data: BytesLike): Result;
   decodeFunctionResult(
+    functionFragment: "primaryFees",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
     functionFragment: "provisionalGovernance",
-    data: BytesLike
-  ): Result;
-  decodeFunctionResult(functionFragment: "quoteToken", data: BytesLike): Result;
-  decodeFunctionResult(
-    functionFragment: "quoteTokenTransfer",
-    data: BytesLike
-  ): Result;
-  decodeFunctionResult(
-    functionFragment: "quoteTokenTransferFrom",
     data: BytesLike
   ): Result;
   decodeFunctionResult(
@@ -354,6 +362,10 @@ interface LeveragedPoolInterface extends ethers.utils.Interface {
     functionFragment: "secondaryFeeSplitPercent",
     data: BytesLike
   ): Result;
+  decodeFunctionResult(
+    functionFragment: "secondaryFees",
+    data: BytesLike
+  ): Result;
   decodeFunctionResult(functionFragment: "setKeeper", data: BytesLike): Result;
   decodeFunctionResult(
     functionFragment: "setNewPoolBalances",
@@ -361,6 +373,18 @@ interface LeveragedPoolInterface extends ethers.utils.Interface {
   ): Result;
   decodeFunctionResult(
     functionFragment: "settlementEthOracle",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "settlementToken",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "settlementTokenTransfer",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "settlementTokenTransferFrom",
     data: BytesLike
   ): Result;
   decodeFunctionResult(
@@ -386,7 +410,7 @@ interface LeveragedPoolInterface extends ethers.utils.Interface {
     data: BytesLike
   ): Result;
   decodeFunctionResult(
-    functionFragment: "withdrawQuote",
+    functionFragment: "withdrawSettlement",
     data: BytesLike
   ): Result;
 
@@ -395,11 +419,15 @@ interface LeveragedPoolInterface extends ethers.utils.Interface {
     "GovernanceAddressChanged(address,address)": EventFragment;
     "KeeperAddressChanged(address,address)": EventFragment;
     "Paused()": EventFragment;
+    "PoolBalancesChanged(uint256,uint256)": EventFragment;
     "PoolInitialized(address,address,address,string)": EventFragment;
     "PoolRebalance(int256,int256,uint256,uint256)": EventFragment;
     "PriceChangeError(int256,int256)": EventFragment;
+    "PrimaryFeesPaid(address,uint256)": EventFragment;
     "ProvisionalGovernanceChanged(address)": EventFragment;
     "SecondaryFeeAddressUpdated(address,address)": EventFragment;
+    "SecondaryFeesPaid(address,uint256)": EventFragment;
+    "SettlementWithdrawn(address,uint256)": EventFragment;
     "Unpaused()": EventFragment;
   };
 
@@ -407,13 +435,17 @@ interface LeveragedPoolInterface extends ethers.utils.Interface {
   getEvent(nameOrSignatureOrTopic: "GovernanceAddressChanged"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "KeeperAddressChanged"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "Paused"): EventFragment;
+  getEvent(nameOrSignatureOrTopic: "PoolBalancesChanged"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "PoolInitialized"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "PoolRebalance"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "PriceChangeError"): EventFragment;
+  getEvent(nameOrSignatureOrTopic: "PrimaryFeesPaid"): EventFragment;
   getEvent(
     nameOrSignatureOrTopic: "ProvisionalGovernanceChanged"
   ): EventFragment;
   getEvent(nameOrSignatureOrTopic: "SecondaryFeeAddressUpdated"): EventFragment;
+  getEvent(nameOrSignatureOrTopic: "SecondaryFeesPaid"): EventFragment;
+  getEvent(nameOrSignatureOrTopic: "SettlementWithdrawn"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "Unpaused"): EventFragment;
 }
 
@@ -468,13 +500,21 @@ export class LeveragedPool extends BaseContract {
     balances(overrides?: CallOverrides): Promise<[BigNumber, BigNumber]>;
 
     burnTokens(
-      isLongToken: boolean,
+      tokenType: BigNumberish,
       amount: BigNumberish,
       burner: string,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<ContractTransaction>;
 
     claimGovernance(
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<ContractTransaction>;
+
+    claimPrimaryFees(
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<ContractTransaction>;
+
+    claimSecondaryFees(
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<ContractTransaction>;
 
@@ -503,7 +543,7 @@ export class LeveragedPool extends BaseContract {
         _longToken: string;
         _shortToken: string;
         _poolCommitter: string;
-        _invariantCheckContract: string;
+        _invariantCheck: string;
         _poolName: string;
         _frontRunningInterval: BigNumberish;
         _updateInterval: BigNumberish;
@@ -511,7 +551,7 @@ export class LeveragedPool extends BaseContract {
         _fee: BigNumberish;
         _feeAddress: string;
         _secondaryFeeAddress: string;
-        _quoteToken: string;
+        _settlementToken: string;
         _secondaryFeeSplitPercent: BigNumberish;
       },
       overrides?: Overrides & { from?: string | Promise<string> }
@@ -521,8 +561,6 @@ export class LeveragedPool extends BaseContract {
 
     invariantCheck(overrides?: CallOverrides): Promise<[string]>;
 
-    invariantCheckContract(overrides?: CallOverrides): Promise<[string]>;
-
     keeper(overrides?: CallOverrides): Promise<[string]>;
 
     lastPriceTimestamp(overrides?: CallOverrides): Promise<[BigNumber]>;
@@ -530,13 +568,6 @@ export class LeveragedPool extends BaseContract {
     leverageAmount(overrides?: CallOverrides): Promise<[string]>;
 
     longBalance(overrides?: CallOverrides): Promise<[BigNumber]>;
-
-    mintTokens(
-      isLongToken: boolean,
-      amount: BigNumberish,
-      minter: string,
-      overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<ContractTransaction>;
 
     oracleWrapper(overrides?: CallOverrides): Promise<[string]>;
 
@@ -571,26 +602,15 @@ export class LeveragedPool extends BaseContract {
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<ContractTransaction>;
 
+    primaryFees(overrides?: CallOverrides): Promise<[BigNumber]>;
+
     provisionalGovernance(overrides?: CallOverrides): Promise<[string]>;
-
-    quoteToken(overrides?: CallOverrides): Promise<[string]>;
-
-    quoteTokenTransfer(
-      to: string,
-      amount: BigNumberish,
-      overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<ContractTransaction>;
-
-    quoteTokenTransferFrom(
-      from: string,
-      to: string,
-      amount: BigNumberish,
-      overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<ContractTransaction>;
 
     secondaryFeeAddress(overrides?: CallOverrides): Promise<[string]>;
 
     secondaryFeeSplitPercent(overrides?: CallOverrides): Promise<[BigNumber]>;
+
+    secondaryFees(overrides?: CallOverrides): Promise<[BigNumber]>;
 
     setKeeper(
       _keeper: string,
@@ -604,6 +624,21 @@ export class LeveragedPool extends BaseContract {
     ): Promise<ContractTransaction>;
 
     settlementEthOracle(overrides?: CallOverrides): Promise<[string]>;
+
+    settlementToken(overrides?: CallOverrides): Promise<[string]>;
+
+    settlementTokenTransfer(
+      to: string,
+      amount: BigNumberish,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<ContractTransaction>;
+
+    settlementTokenTransferFrom(
+      from: string,
+      to: string,
+      amount: BigNumberish,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<ContractTransaction>;
 
     shortBalance(overrides?: CallOverrides): Promise<[BigNumber]>;
 
@@ -630,7 +665,7 @@ export class LeveragedPool extends BaseContract {
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<ContractTransaction>;
 
-    withdrawQuote(
+    withdrawSettlement(
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<ContractTransaction>;
   };
@@ -642,13 +677,21 @@ export class LeveragedPool extends BaseContract {
   balances(overrides?: CallOverrides): Promise<[BigNumber, BigNumber]>;
 
   burnTokens(
-    isLongToken: boolean,
+    tokenType: BigNumberish,
     amount: BigNumberish,
     burner: string,
     overrides?: Overrides & { from?: string | Promise<string> }
   ): Promise<ContractTransaction>;
 
   claimGovernance(
+    overrides?: Overrides & { from?: string | Promise<string> }
+  ): Promise<ContractTransaction>;
+
+  claimPrimaryFees(
+    overrides?: Overrides & { from?: string | Promise<string> }
+  ): Promise<ContractTransaction>;
+
+  claimSecondaryFees(
     overrides?: Overrides & { from?: string | Promise<string> }
   ): Promise<ContractTransaction>;
 
@@ -677,7 +720,7 @@ export class LeveragedPool extends BaseContract {
       _longToken: string;
       _shortToken: string;
       _poolCommitter: string;
-      _invariantCheckContract: string;
+      _invariantCheck: string;
       _poolName: string;
       _frontRunningInterval: BigNumberish;
       _updateInterval: BigNumberish;
@@ -685,7 +728,7 @@ export class LeveragedPool extends BaseContract {
       _fee: BigNumberish;
       _feeAddress: string;
       _secondaryFeeAddress: string;
-      _quoteToken: string;
+      _settlementToken: string;
       _secondaryFeeSplitPercent: BigNumberish;
     },
     overrides?: Overrides & { from?: string | Promise<string> }
@@ -695,8 +738,6 @@ export class LeveragedPool extends BaseContract {
 
   invariantCheck(overrides?: CallOverrides): Promise<string>;
 
-  invariantCheckContract(overrides?: CallOverrides): Promise<string>;
-
   keeper(overrides?: CallOverrides): Promise<string>;
 
   lastPriceTimestamp(overrides?: CallOverrides): Promise<BigNumber>;
@@ -704,13 +745,6 @@ export class LeveragedPool extends BaseContract {
   leverageAmount(overrides?: CallOverrides): Promise<string>;
 
   longBalance(overrides?: CallOverrides): Promise<BigNumber>;
-
-  mintTokens(
-    isLongToken: boolean,
-    amount: BigNumberish,
-    minter: string,
-    overrides?: Overrides & { from?: string | Promise<string> }
-  ): Promise<ContractTransaction>;
 
   oracleWrapper(overrides?: CallOverrides): Promise<string>;
 
@@ -745,26 +779,15 @@ export class LeveragedPool extends BaseContract {
     overrides?: Overrides & { from?: string | Promise<string> }
   ): Promise<ContractTransaction>;
 
+  primaryFees(overrides?: CallOverrides): Promise<BigNumber>;
+
   provisionalGovernance(overrides?: CallOverrides): Promise<string>;
-
-  quoteToken(overrides?: CallOverrides): Promise<string>;
-
-  quoteTokenTransfer(
-    to: string,
-    amount: BigNumberish,
-    overrides?: Overrides & { from?: string | Promise<string> }
-  ): Promise<ContractTransaction>;
-
-  quoteTokenTransferFrom(
-    from: string,
-    to: string,
-    amount: BigNumberish,
-    overrides?: Overrides & { from?: string | Promise<string> }
-  ): Promise<ContractTransaction>;
 
   secondaryFeeAddress(overrides?: CallOverrides): Promise<string>;
 
   secondaryFeeSplitPercent(overrides?: CallOverrides): Promise<BigNumber>;
+
+  secondaryFees(overrides?: CallOverrides): Promise<BigNumber>;
 
   setKeeper(
     _keeper: string,
@@ -778,6 +801,21 @@ export class LeveragedPool extends BaseContract {
   ): Promise<ContractTransaction>;
 
   settlementEthOracle(overrides?: CallOverrides): Promise<string>;
+
+  settlementToken(overrides?: CallOverrides): Promise<string>;
+
+  settlementTokenTransfer(
+    to: string,
+    amount: BigNumberish,
+    overrides?: Overrides & { from?: string | Promise<string> }
+  ): Promise<ContractTransaction>;
+
+  settlementTokenTransferFrom(
+    from: string,
+    to: string,
+    amount: BigNumberish,
+    overrides?: Overrides & { from?: string | Promise<string> }
+  ): Promise<ContractTransaction>;
 
   shortBalance(overrides?: CallOverrides): Promise<BigNumber>;
 
@@ -804,7 +842,7 @@ export class LeveragedPool extends BaseContract {
     overrides?: Overrides & { from?: string | Promise<string> }
   ): Promise<ContractTransaction>;
 
-  withdrawQuote(
+  withdrawSettlement(
     overrides?: Overrides & { from?: string | Promise<string> }
   ): Promise<ContractTransaction>;
 
@@ -816,13 +854,17 @@ export class LeveragedPool extends BaseContract {
     balances(overrides?: CallOverrides): Promise<[BigNumber, BigNumber]>;
 
     burnTokens(
-      isLongToken: boolean,
+      tokenType: BigNumberish,
       amount: BigNumberish,
       burner: string,
       overrides?: CallOverrides
     ): Promise<void>;
 
     claimGovernance(overrides?: CallOverrides): Promise<void>;
+
+    claimPrimaryFees(overrides?: CallOverrides): Promise<void>;
+
+    claimSecondaryFees(overrides?: CallOverrides): Promise<void>;
 
     fee(overrides?: CallOverrides): Promise<string>;
 
@@ -849,7 +891,7 @@ export class LeveragedPool extends BaseContract {
         _longToken: string;
         _shortToken: string;
         _poolCommitter: string;
-        _invariantCheckContract: string;
+        _invariantCheck: string;
         _poolName: string;
         _frontRunningInterval: BigNumberish;
         _updateInterval: BigNumberish;
@@ -857,7 +899,7 @@ export class LeveragedPool extends BaseContract {
         _fee: BigNumberish;
         _feeAddress: string;
         _secondaryFeeAddress: string;
-        _quoteToken: string;
+        _settlementToken: string;
         _secondaryFeeSplitPercent: BigNumberish;
       },
       overrides?: CallOverrides
@@ -867,8 +909,6 @@ export class LeveragedPool extends BaseContract {
 
     invariantCheck(overrides?: CallOverrides): Promise<string>;
 
-    invariantCheckContract(overrides?: CallOverrides): Promise<string>;
-
     keeper(overrides?: CallOverrides): Promise<string>;
 
     lastPriceTimestamp(overrides?: CallOverrides): Promise<BigNumber>;
@@ -876,13 +916,6 @@ export class LeveragedPool extends BaseContract {
     leverageAmount(overrides?: CallOverrides): Promise<string>;
 
     longBalance(overrides?: CallOverrides): Promise<BigNumber>;
-
-    mintTokens(
-      isLongToken: boolean,
-      amount: BigNumberish,
-      minter: string,
-      overrides?: CallOverrides
-    ): Promise<void>;
 
     oracleWrapper(overrides?: CallOverrides): Promise<string>;
 
@@ -915,26 +948,15 @@ export class LeveragedPool extends BaseContract {
       overrides?: CallOverrides
     ): Promise<void>;
 
+    primaryFees(overrides?: CallOverrides): Promise<BigNumber>;
+
     provisionalGovernance(overrides?: CallOverrides): Promise<string>;
-
-    quoteToken(overrides?: CallOverrides): Promise<string>;
-
-    quoteTokenTransfer(
-      to: string,
-      amount: BigNumberish,
-      overrides?: CallOverrides
-    ): Promise<void>;
-
-    quoteTokenTransferFrom(
-      from: string,
-      to: string,
-      amount: BigNumberish,
-      overrides?: CallOverrides
-    ): Promise<void>;
 
     secondaryFeeAddress(overrides?: CallOverrides): Promise<string>;
 
     secondaryFeeSplitPercent(overrides?: CallOverrides): Promise<BigNumber>;
+
+    secondaryFees(overrides?: CallOverrides): Promise<BigNumber>;
 
     setKeeper(_keeper: string, overrides?: CallOverrides): Promise<void>;
 
@@ -945,6 +967,21 @@ export class LeveragedPool extends BaseContract {
     ): Promise<void>;
 
     settlementEthOracle(overrides?: CallOverrides): Promise<string>;
+
+    settlementToken(overrides?: CallOverrides): Promise<string>;
+
+    settlementTokenTransfer(
+      to: string,
+      amount: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<void>;
+
+    settlementTokenTransferFrom(
+      from: string,
+      to: string,
+      amount: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<void>;
 
     shortBalance(overrides?: CallOverrides): Promise<BigNumber>;
 
@@ -966,7 +1003,7 @@ export class LeveragedPool extends BaseContract {
       overrides?: CallOverrides
     ): Promise<void>;
 
-    withdrawQuote(overrides?: CallOverrides): Promise<void>;
+    withdrawSettlement(overrides?: CallOverrides): Promise<void>;
   };
 
   filters: {
@@ -996,17 +1033,25 @@ export class LeveragedPool extends BaseContract {
 
     Paused(): TypedEventFilter<[], {}>;
 
+    PoolBalancesChanged(
+      long?: BigNumberish | null,
+      short?: BigNumberish | null
+    ): TypedEventFilter<
+      [BigNumber, BigNumber],
+      { long: BigNumber; short: BigNumber }
+    >;
+
     PoolInitialized(
       longToken?: string | null,
       shortToken?: string | null,
-      quoteToken?: null,
+      settlementToken?: null,
       poolName?: null
     ): TypedEventFilter<
       [string, string, string, string],
       {
         longToken: string;
         shortToken: string;
-        quoteToken: string;
+        settlementToken: string;
         poolName: string;
       }
     >;
@@ -1034,6 +1079,14 @@ export class LeveragedPool extends BaseContract {
       { startPrice: BigNumber; endPrice: BigNumber }
     >;
 
+    PrimaryFeesPaid(
+      feeAddress?: string | null,
+      amount?: null
+    ): TypedEventFilter<
+      [string, BigNumber],
+      { feeAddress: string; amount: BigNumber }
+    >;
+
     ProvisionalGovernanceChanged(
       newAddress?: string | null
     ): TypedEventFilter<[string], { newAddress: string }>;
@@ -1044,6 +1097,22 @@ export class LeveragedPool extends BaseContract {
     ): TypedEventFilter<
       [string, string],
       { oldAddress: string; newAddress: string }
+    >;
+
+    SecondaryFeesPaid(
+      secondaryFeeAddress?: string | null,
+      amount?: null
+    ): TypedEventFilter<
+      [string, BigNumber],
+      { secondaryFeeAddress: string; amount: BigNumber }
+    >;
+
+    SettlementWithdrawn(
+      to?: string | null,
+      quantity?: BigNumberish | null
+    ): TypedEventFilter<
+      [string, BigNumber],
+      { to: string; quantity: BigNumber }
     >;
 
     Unpaused(): TypedEventFilter<[], {}>;
@@ -1057,13 +1126,21 @@ export class LeveragedPool extends BaseContract {
     balances(overrides?: CallOverrides): Promise<BigNumber>;
 
     burnTokens(
-      isLongToken: boolean,
+      tokenType: BigNumberish,
       amount: BigNumberish,
       burner: string,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<BigNumber>;
 
     claimGovernance(
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<BigNumber>;
+
+    claimPrimaryFees(
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<BigNumber>;
+
+    claimSecondaryFees(
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<BigNumber>;
 
@@ -1090,7 +1167,7 @@ export class LeveragedPool extends BaseContract {
         _longToken: string;
         _shortToken: string;
         _poolCommitter: string;
-        _invariantCheckContract: string;
+        _invariantCheck: string;
         _poolName: string;
         _frontRunningInterval: BigNumberish;
         _updateInterval: BigNumberish;
@@ -1098,7 +1175,7 @@ export class LeveragedPool extends BaseContract {
         _fee: BigNumberish;
         _feeAddress: string;
         _secondaryFeeAddress: string;
-        _quoteToken: string;
+        _settlementToken: string;
         _secondaryFeeSplitPercent: BigNumberish;
       },
       overrides?: Overrides & { from?: string | Promise<string> }
@@ -1108,8 +1185,6 @@ export class LeveragedPool extends BaseContract {
 
     invariantCheck(overrides?: CallOverrides): Promise<BigNumber>;
 
-    invariantCheckContract(overrides?: CallOverrides): Promise<BigNumber>;
-
     keeper(overrides?: CallOverrides): Promise<BigNumber>;
 
     lastPriceTimestamp(overrides?: CallOverrides): Promise<BigNumber>;
@@ -1117,13 +1192,6 @@ export class LeveragedPool extends BaseContract {
     leverageAmount(overrides?: CallOverrides): Promise<BigNumber>;
 
     longBalance(overrides?: CallOverrides): Promise<BigNumber>;
-
-    mintTokens(
-      isLongToken: boolean,
-      amount: BigNumberish,
-      minter: string,
-      overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<BigNumber>;
 
     oracleWrapper(overrides?: CallOverrides): Promise<BigNumber>;
 
@@ -1158,26 +1226,15 @@ export class LeveragedPool extends BaseContract {
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<BigNumber>;
 
+    primaryFees(overrides?: CallOverrides): Promise<BigNumber>;
+
     provisionalGovernance(overrides?: CallOverrides): Promise<BigNumber>;
-
-    quoteToken(overrides?: CallOverrides): Promise<BigNumber>;
-
-    quoteTokenTransfer(
-      to: string,
-      amount: BigNumberish,
-      overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<BigNumber>;
-
-    quoteTokenTransferFrom(
-      from: string,
-      to: string,
-      amount: BigNumberish,
-      overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<BigNumber>;
 
     secondaryFeeAddress(overrides?: CallOverrides): Promise<BigNumber>;
 
     secondaryFeeSplitPercent(overrides?: CallOverrides): Promise<BigNumber>;
+
+    secondaryFees(overrides?: CallOverrides): Promise<BigNumber>;
 
     setKeeper(
       _keeper: string,
@@ -1191,6 +1248,21 @@ export class LeveragedPool extends BaseContract {
     ): Promise<BigNumber>;
 
     settlementEthOracle(overrides?: CallOverrides): Promise<BigNumber>;
+
+    settlementToken(overrides?: CallOverrides): Promise<BigNumber>;
+
+    settlementTokenTransfer(
+      to: string,
+      amount: BigNumberish,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<BigNumber>;
+
+    settlementTokenTransferFrom(
+      from: string,
+      to: string,
+      amount: BigNumberish,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<BigNumber>;
 
     shortBalance(overrides?: CallOverrides): Promise<BigNumber>;
 
@@ -1217,7 +1289,7 @@ export class LeveragedPool extends BaseContract {
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<BigNumber>;
 
-    withdrawQuote(
+    withdrawSettlement(
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<BigNumber>;
   };
@@ -1230,13 +1302,21 @@ export class LeveragedPool extends BaseContract {
     balances(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
     burnTokens(
-      isLongToken: boolean,
+      tokenType: BigNumberish,
       amount: BigNumberish,
       burner: string,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<PopulatedTransaction>;
 
     claimGovernance(
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<PopulatedTransaction>;
+
+    claimPrimaryFees(
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<PopulatedTransaction>;
+
+    claimSecondaryFees(
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<PopulatedTransaction>;
 
@@ -1269,7 +1349,7 @@ export class LeveragedPool extends BaseContract {
         _longToken: string;
         _shortToken: string;
         _poolCommitter: string;
-        _invariantCheckContract: string;
+        _invariantCheck: string;
         _poolName: string;
         _frontRunningInterval: BigNumberish;
         _updateInterval: BigNumberish;
@@ -1277,7 +1357,7 @@ export class LeveragedPool extends BaseContract {
         _fee: BigNumberish;
         _feeAddress: string;
         _secondaryFeeAddress: string;
-        _quoteToken: string;
+        _settlementToken: string;
         _secondaryFeeSplitPercent: BigNumberish;
       },
       overrides?: Overrides & { from?: string | Promise<string> }
@@ -1286,10 +1366,6 @@ export class LeveragedPool extends BaseContract {
     intervalPassed(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
     invariantCheck(overrides?: CallOverrides): Promise<PopulatedTransaction>;
-
-    invariantCheckContract(
-      overrides?: CallOverrides
-    ): Promise<PopulatedTransaction>;
 
     keeper(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
@@ -1300,13 +1376,6 @@ export class LeveragedPool extends BaseContract {
     leverageAmount(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
     longBalance(overrides?: CallOverrides): Promise<PopulatedTransaction>;
-
-    mintTokens(
-      isLongToken: boolean,
-      amount: BigNumberish,
-      minter: string,
-      overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<PopulatedTransaction>;
 
     oracleWrapper(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
@@ -1341,23 +1410,10 @@ export class LeveragedPool extends BaseContract {
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<PopulatedTransaction>;
 
+    primaryFees(overrides?: CallOverrides): Promise<PopulatedTransaction>;
+
     provisionalGovernance(
       overrides?: CallOverrides
-    ): Promise<PopulatedTransaction>;
-
-    quoteToken(overrides?: CallOverrides): Promise<PopulatedTransaction>;
-
-    quoteTokenTransfer(
-      to: string,
-      amount: BigNumberish,
-      overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<PopulatedTransaction>;
-
-    quoteTokenTransferFrom(
-      from: string,
-      to: string,
-      amount: BigNumberish,
-      overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<PopulatedTransaction>;
 
     secondaryFeeAddress(
@@ -1367,6 +1423,8 @@ export class LeveragedPool extends BaseContract {
     secondaryFeeSplitPercent(
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
+
+    secondaryFees(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
     setKeeper(
       _keeper: string,
@@ -1381,6 +1439,21 @@ export class LeveragedPool extends BaseContract {
 
     settlementEthOracle(
       overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
+
+    settlementToken(overrides?: CallOverrides): Promise<PopulatedTransaction>;
+
+    settlementTokenTransfer(
+      to: string,
+      amount: BigNumberish,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<PopulatedTransaction>;
+
+    settlementTokenTransferFrom(
+      from: string,
+      to: string,
+      amount: BigNumberish,
+      overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<PopulatedTransaction>;
 
     shortBalance(overrides?: CallOverrides): Promise<PopulatedTransaction>;
@@ -1411,7 +1484,7 @@ export class LeveragedPool extends BaseContract {
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<PopulatedTransaction>;
 
-    withdrawQuote(
+    withdrawSettlement(
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<PopulatedTransaction>;
   };
