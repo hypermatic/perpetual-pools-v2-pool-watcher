@@ -8,6 +8,8 @@ import {
   PoolKeeper
 } from './typesV2';
 
+import { EVENT_NAMES } from './constants';
+
 export type RawCommitType = 0 | 1 | 2 | 3 | 4 | 5
 
 export type CommitEventData = {
@@ -33,6 +35,14 @@ export type UpkeepEventData = {
   txHash: string
 }
 
+export type CommitsExecutedData = {
+  updateIntervalId: number,
+  burningFee: string,
+  timestamp: number,
+  blockNumber: number,
+  txHash: string
+}
+
 export type SpecificPool = {
   poolAddress: string;
 }
@@ -42,6 +52,9 @@ type PoolWatcherArgs = {
   chainId: string
   commitmentWindowBuffer: number
   oraclePriceTransformer?: (lastPrice: BigNumber, currentPrice: BigNumber) => BigNumber
+  ignoreEvents?: {
+    [eventName: string]: boolean
+  }
 }
 
 export type PoolWatcherConstructorArgs = SpecificPool & PoolWatcherArgs;
@@ -95,6 +108,14 @@ export type ExpectedPoolState = {
   lastOraclePrice: BigNumber,
   expectedOraclePrice: BigNumber,
   pendingCommits: TotalPoolCommitmentsBN[]
+}
+
+export interface PoolWatcherEvents {
+  [EVENT_NAMES.COMMIT]: (data: CommitEventData) => void;
+  [EVENT_NAMES.UPKEEP]: (data: UpkeepEventData) => void;
+  [EVENT_NAMES.COMMITMENT_WINDOW_ENDED]: () => void;
+  [EVENT_NAMES.COMMITMENT_WINDOW_ENDING]: (state: ExpectedPoolState) => void;
+  [EVENT_NAMES.COMMITS_EXECUTED]: (data: CommitsExecutedData) => void;
 }
 
 export type TotalPoolCommitments = [
