@@ -1061,9 +1061,9 @@ export class PoolCommitter extends BaseContract {
 
     CreateCommit(
       user?: string | null,
-      amount?: null,
+      amount?: BigNumberish | null,
       commitType?: BigNumberish | null,
-      appropriateUpdateIntervalId?: BigNumberish | null,
+      appropriateUpdateIntervalId?: null,
       fromAggregateBalance?: null,
       payForClaim?: null,
       mintingFee?: null

@@ -72,7 +72,7 @@ const _abi = [
         type: "address",
       },
       {
-        indexed: false,
+        indexed: true,
         internalType: "uint256",
         name: "amount",
         type: "uint256",
@@ -84,7 +84,7 @@ const _abi = [
         type: "uint8",
       },
       {
-        indexed: true,
+        indexed: false,
         internalType: "uint256",
         name: "appropriateUpdateIntervalId",
         type: "uint256",
