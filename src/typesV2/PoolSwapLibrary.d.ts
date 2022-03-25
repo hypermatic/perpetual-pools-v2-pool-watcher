@@ -20,8 +20,12 @@ import { TypedEventFilter, TypedEvent, TypedListener } from "./commons";
 
 interface PoolSwapLibraryInterface extends ethers.utils.Interface {
   functions: {
+    "MAX_BURNING_FEE()": FunctionFragment;
     "MAX_DECIMALS()": FunctionFragment;
+    "MAX_MINTING_FEE()": FunctionFragment;
+    "ONE()": FunctionFragment;
     "WAD_PRECISION()": FunctionFragment;
+    "addBytes(bytes16,bytes16)": FunctionFragment;
     "appropriateUpdateIntervalId(uint256,uint256,uint256,uint256,uint256)": FunctionFragment;
     "calculatePriceChange(tuple)": FunctionFragment;
     "compareDecimals(bytes16,bytes16)": FunctionFragment;
@@ -42,17 +46,31 @@ interface PoolSwapLibraryInterface extends ethers.utils.Interface {
     "getWithdrawAmountOnBurn(uint256,uint256,uint256,uint256)": FunctionFragment;
     "isBeforeFrontRunningInterval(uint256,uint256,uint256,uint256)": FunctionFragment;
     "mulFraction(uint256,uint256,uint256)": FunctionFragment;
+    "multiplyBytes(bytes16,bytes16)": FunctionFragment;
     "multiplyDecimalByUInt(bytes16,uint256)": FunctionFragment;
-    "one()": FunctionFragment;
+    "subtractBytes(bytes16,bytes16)": FunctionFragment;
   };
 
+  encodeFunctionData(
+    functionFragment: "MAX_BURNING_FEE",
+    values?: undefined
+  ): string;
   encodeFunctionData(
     functionFragment: "MAX_DECIMALS",
     values?: undefined
   ): string;
   encodeFunctionData(
+    functionFragment: "MAX_MINTING_FEE",
+    values?: undefined
+  ): string;
+  encodeFunctionData(functionFragment: "ONE", values?: undefined): string;
+  encodeFunctionData(
     functionFragment: "WAD_PRECISION",
     values?: undefined
+  ): string;
+  encodeFunctionData(
+    functionFragment: "addBytes",
+    values: [BytesLike, BytesLike]
   ): string;
   encodeFunctionData(
     functionFragment: "appropriateUpdateIntervalId",
@@ -141,12 +159,12 @@ interface PoolSwapLibraryInterface extends ethers.utils.Interface {
         shortPrice: BytesLike;
         currentUpdateIntervalId: BigNumberish;
         updateIntervalId: BigNumberish;
-        longMintAmount: BigNumberish;
-        longBurnAmount: BigNumberish;
-        shortMintAmount: BigNumberish;
-        shortBurnAmount: BigNumberish;
-        longBurnShortMintAmount: BigNumberish;
-        shortBurnLongMintAmount: BigNumberish;
+        longMintSettlement: BigNumberish;
+        longBurnPoolTokens: BigNumberish;
+        shortMintSettlement: BigNumberish;
+        shortBurnPoolTokens: BigNumberish;
+        longBurnShortMintPoolTokens: BigNumberish;
+        shortBurnLongMintPoolTokens: BigNumberish;
         burnFee: BytesLike;
       }
     ]
@@ -164,19 +182,36 @@ interface PoolSwapLibraryInterface extends ethers.utils.Interface {
     values: [BigNumberish, BigNumberish, BigNumberish]
   ): string;
   encodeFunctionData(
+    functionFragment: "multiplyBytes",
+    values: [BytesLike, BytesLike]
+  ): string;
+  encodeFunctionData(
     functionFragment: "multiplyDecimalByUInt",
     values: [BytesLike, BigNumberish]
   ): string;
-  encodeFunctionData(functionFragment: "one", values?: undefined): string;
+  encodeFunctionData(
+    functionFragment: "subtractBytes",
+    values: [BytesLike, BytesLike]
+  ): string;
 
+  decodeFunctionResult(
+    functionFragment: "MAX_BURNING_FEE",
+    data: BytesLike
+  ): Result;
   decodeFunctionResult(
     functionFragment: "MAX_DECIMALS",
     data: BytesLike
   ): Result;
   decodeFunctionResult(
+    functionFragment: "MAX_MINTING_FEE",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(functionFragment: "ONE", data: BytesLike): Result;
+  decodeFunctionResult(
     functionFragment: "WAD_PRECISION",
     data: BytesLike
   ): Result;
+  decodeFunctionResult(functionFragment: "addBytes", data: BytesLike): Result;
   decodeFunctionResult(
     functionFragment: "appropriateUpdateIntervalId",
     data: BytesLike
@@ -240,10 +275,17 @@ interface PoolSwapLibraryInterface extends ethers.utils.Interface {
     data: BytesLike
   ): Result;
   decodeFunctionResult(
+    functionFragment: "multiplyBytes",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
     functionFragment: "multiplyDecimalByUInt",
     data: BytesLike
   ): Result;
-  decodeFunctionResult(functionFragment: "one", data: BytesLike): Result;
+  decodeFunctionResult(
+    functionFragment: "subtractBytes",
+    data: BytesLike
+  ): Result;
 
   events: {};
 }
@@ -292,9 +334,21 @@ export class PoolSwapLibrary extends BaseContract {
   interface: PoolSwapLibraryInterface;
 
   functions: {
+    MAX_BURNING_FEE(overrides?: CallOverrides): Promise<[string]>;
+
     MAX_DECIMALS(overrides?: CallOverrides): Promise<[BigNumber]>;
 
+    MAX_MINTING_FEE(overrides?: CallOverrides): Promise<[string]>;
+
+    ONE(overrides?: CallOverrides): Promise<[string]>;
+
     WAD_PRECISION(overrides?: CallOverrides): Promise<[BigNumber]>;
+
+    addBytes(
+      x: BytesLike,
+      y: BytesLike,
+      overrides?: CallOverrides
+    ): Promise<[string]>;
 
     appropriateUpdateIntervalId(
       timestamp: BigNumberish,
@@ -381,7 +435,7 @@ export class PoolSwapLibrary extends BaseContract {
       tokenSupply: BigNumberish,
       amountIn: BigNumberish,
       balance: BigNumberish,
-      shadowBalance: BigNumberish,
+      pendingBurnPoolTokens: BigNumberish,
       overrides?: CallOverrides
     ): Promise<[BigNumber]>;
 
@@ -411,12 +465,12 @@ export class PoolSwapLibrary extends BaseContract {
         shortPrice: BytesLike;
         currentUpdateIntervalId: BigNumberish;
         updateIntervalId: BigNumberish;
-        longMintAmount: BigNumberish;
-        longBurnAmount: BigNumberish;
-        shortMintAmount: BigNumberish;
-        shortBurnAmount: BigNumberish;
-        longBurnShortMintAmount: BigNumberish;
-        shortBurnLongMintAmount: BigNumberish;
+        longMintSettlement: BigNumberish;
+        longBurnPoolTokens: BigNumberish;
+        shortMintSettlement: BigNumberish;
+        shortBurnPoolTokens: BigNumberish;
+        longBurnShortMintPoolTokens: BigNumberish;
+        shortBurnLongMintPoolTokens: BigNumberish;
         burnFee: BytesLike;
       },
       overrides?: CallOverrides
@@ -434,7 +488,7 @@ export class PoolSwapLibrary extends BaseContract {
       tokenSupply: BigNumberish,
       amountIn: BigNumberish,
       balance: BigNumberish,
-      shadowBalance: BigNumberish,
+      pendingBurnPoolTokens: BigNumberish,
       overrides?: CallOverrides
     ): Promise<[BigNumber]>;
 
@@ -453,18 +507,40 @@ export class PoolSwapLibrary extends BaseContract {
       overrides?: CallOverrides
     ): Promise<[BigNumber]>;
 
+    multiplyBytes(
+      x: BytesLike,
+      y: BytesLike,
+      overrides?: CallOverrides
+    ): Promise<[string]>;
+
     multiplyDecimalByUInt(
       a: BytesLike,
       b: BigNumberish,
       overrides?: CallOverrides
     ): Promise<[string]>;
 
-    one(overrides?: CallOverrides): Promise<[string]>;
+    subtractBytes(
+      x: BytesLike,
+      y: BytesLike,
+      overrides?: CallOverrides
+    ): Promise<[string]>;
   };
+
+  MAX_BURNING_FEE(overrides?: CallOverrides): Promise<string>;
 
   MAX_DECIMALS(overrides?: CallOverrides): Promise<BigNumber>;
 
+  MAX_MINTING_FEE(overrides?: CallOverrides): Promise<string>;
+
+  ONE(overrides?: CallOverrides): Promise<string>;
+
   WAD_PRECISION(overrides?: CallOverrides): Promise<BigNumber>;
+
+  addBytes(
+    x: BytesLike,
+    y: BytesLike,
+    overrides?: CallOverrides
+  ): Promise<string>;
 
   appropriateUpdateIntervalId(
     timestamp: BigNumberish,
@@ -551,7 +627,7 @@ export class PoolSwapLibrary extends BaseContract {
     tokenSupply: BigNumberish,
     amountIn: BigNumberish,
     balance: BigNumberish,
-    shadowBalance: BigNumberish,
+    pendingBurnPoolTokens: BigNumberish,
     overrides?: CallOverrides
   ): Promise<BigNumber>;
 
@@ -581,12 +657,12 @@ export class PoolSwapLibrary extends BaseContract {
       shortPrice: BytesLike;
       currentUpdateIntervalId: BigNumberish;
       updateIntervalId: BigNumberish;
-      longMintAmount: BigNumberish;
-      longBurnAmount: BigNumberish;
-      shortMintAmount: BigNumberish;
-      shortBurnAmount: BigNumberish;
-      longBurnShortMintAmount: BigNumberish;
-      shortBurnLongMintAmount: BigNumberish;
+      longMintSettlement: BigNumberish;
+      longBurnPoolTokens: BigNumberish;
+      shortMintSettlement: BigNumberish;
+      shortBurnPoolTokens: BigNumberish;
+      longBurnShortMintPoolTokens: BigNumberish;
+      shortBurnLongMintPoolTokens: BigNumberish;
       burnFee: BytesLike;
     },
     overrides?: CallOverrides
@@ -604,7 +680,7 @@ export class PoolSwapLibrary extends BaseContract {
     tokenSupply: BigNumberish,
     amountIn: BigNumberish,
     balance: BigNumberish,
-    shadowBalance: BigNumberish,
+    pendingBurnPoolTokens: BigNumberish,
     overrides?: CallOverrides
   ): Promise<BigNumber>;
 
@@ -623,18 +699,40 @@ export class PoolSwapLibrary extends BaseContract {
     overrides?: CallOverrides
   ): Promise<BigNumber>;
 
+  multiplyBytes(
+    x: BytesLike,
+    y: BytesLike,
+    overrides?: CallOverrides
+  ): Promise<string>;
+
   multiplyDecimalByUInt(
     a: BytesLike,
     b: BigNumberish,
     overrides?: CallOverrides
   ): Promise<string>;
 
-  one(overrides?: CallOverrides): Promise<string>;
+  subtractBytes(
+    x: BytesLike,
+    y: BytesLike,
+    overrides?: CallOverrides
+  ): Promise<string>;
 
   callStatic: {
+    MAX_BURNING_FEE(overrides?: CallOverrides): Promise<string>;
+
     MAX_DECIMALS(overrides?: CallOverrides): Promise<BigNumber>;
 
+    MAX_MINTING_FEE(overrides?: CallOverrides): Promise<string>;
+
+    ONE(overrides?: CallOverrides): Promise<string>;
+
     WAD_PRECISION(overrides?: CallOverrides): Promise<BigNumber>;
+
+    addBytes(
+      x: BytesLike,
+      y: BytesLike,
+      overrides?: CallOverrides
+    ): Promise<string>;
 
     appropriateUpdateIntervalId(
       timestamp: BigNumberish,
@@ -721,7 +819,7 @@ export class PoolSwapLibrary extends BaseContract {
       tokenSupply: BigNumberish,
       amountIn: BigNumberish,
       balance: BigNumberish,
-      shadowBalance: BigNumberish,
+      pendingBurnPoolTokens: BigNumberish,
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
@@ -751,12 +849,12 @@ export class PoolSwapLibrary extends BaseContract {
         shortPrice: BytesLike;
         currentUpdateIntervalId: BigNumberish;
         updateIntervalId: BigNumberish;
-        longMintAmount: BigNumberish;
-        longBurnAmount: BigNumberish;
-        shortMintAmount: BigNumberish;
-        shortBurnAmount: BigNumberish;
-        longBurnShortMintAmount: BigNumberish;
-        shortBurnLongMintAmount: BigNumberish;
+        longMintSettlement: BigNumberish;
+        longBurnPoolTokens: BigNumberish;
+        shortMintSettlement: BigNumberish;
+        shortBurnPoolTokens: BigNumberish;
+        longBurnShortMintPoolTokens: BigNumberish;
+        shortBurnLongMintPoolTokens: BigNumberish;
         burnFee: BytesLike;
       },
       overrides?: CallOverrides
@@ -774,7 +872,7 @@ export class PoolSwapLibrary extends BaseContract {
       tokenSupply: BigNumberish,
       amountIn: BigNumberish,
       balance: BigNumberish,
-      shadowBalance: BigNumberish,
+      pendingBurnPoolTokens: BigNumberish,
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
@@ -793,22 +891,44 @@ export class PoolSwapLibrary extends BaseContract {
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
+    multiplyBytes(
+      x: BytesLike,
+      y: BytesLike,
+      overrides?: CallOverrides
+    ): Promise<string>;
+
     multiplyDecimalByUInt(
       a: BytesLike,
       b: BigNumberish,
       overrides?: CallOverrides
     ): Promise<string>;
 
-    one(overrides?: CallOverrides): Promise<string>;
+    subtractBytes(
+      x: BytesLike,
+      y: BytesLike,
+      overrides?: CallOverrides
+    ): Promise<string>;
   };
 
   filters: {};
 
   estimateGas: {
+    MAX_BURNING_FEE(overrides?: CallOverrides): Promise<BigNumber>;
+
     MAX_DECIMALS(overrides?: CallOverrides): Promise<BigNumber>;
+
+    MAX_MINTING_FEE(overrides?: CallOverrides): Promise<BigNumber>;
+
+    ONE(overrides?: CallOverrides): Promise<BigNumber>;
 
     WAD_PRECISION(overrides?: CallOverrides): Promise<BigNumber>;
 
+    addBytes(
+      x: BytesLike,
+      y: BytesLike,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
     appropriateUpdateIntervalId(
       timestamp: BigNumberish,
       lastPriceTimestamp: BigNumberish,
@@ -894,7 +1014,7 @@ export class PoolSwapLibrary extends BaseContract {
       tokenSupply: BigNumberish,
       amountIn: BigNumberish,
       balance: BigNumberish,
-      shadowBalance: BigNumberish,
+      pendingBurnPoolTokens: BigNumberish,
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
@@ -924,12 +1044,12 @@ export class PoolSwapLibrary extends BaseContract {
         shortPrice: BytesLike;
         currentUpdateIntervalId: BigNumberish;
         updateIntervalId: BigNumberish;
-        longMintAmount: BigNumberish;
-        longBurnAmount: BigNumberish;
-        shortMintAmount: BigNumberish;
-        shortBurnAmount: BigNumberish;
-        longBurnShortMintAmount: BigNumberish;
-        shortBurnLongMintAmount: BigNumberish;
+        longMintSettlement: BigNumberish;
+        longBurnPoolTokens: BigNumberish;
+        shortMintSettlement: BigNumberish;
+        shortBurnPoolTokens: BigNumberish;
+        longBurnShortMintPoolTokens: BigNumberish;
+        shortBurnLongMintPoolTokens: BigNumberish;
         burnFee: BytesLike;
       },
       overrides?: CallOverrides
@@ -939,7 +1059,7 @@ export class PoolSwapLibrary extends BaseContract {
       tokenSupply: BigNumberish,
       amountIn: BigNumberish,
       balance: BigNumberish,
-      shadowBalance: BigNumberish,
+      pendingBurnPoolTokens: BigNumberish,
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
@@ -958,19 +1078,41 @@ export class PoolSwapLibrary extends BaseContract {
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
+    multiplyBytes(
+      x: BytesLike,
+      y: BytesLike,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
     multiplyDecimalByUInt(
       a: BytesLike,
       b: BigNumberish,
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
-    one(overrides?: CallOverrides): Promise<BigNumber>;
+    subtractBytes(
+      x: BytesLike,
+      y: BytesLike,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
   };
 
   populateTransaction: {
+    MAX_BURNING_FEE(overrides?: CallOverrides): Promise<PopulatedTransaction>;
+
     MAX_DECIMALS(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
+    MAX_MINTING_FEE(overrides?: CallOverrides): Promise<PopulatedTransaction>;
+
+    ONE(overrides?: CallOverrides): Promise<PopulatedTransaction>;
+
     WAD_PRECISION(overrides?: CallOverrides): Promise<PopulatedTransaction>;
+
+    addBytes(
+      x: BytesLike,
+      y: BytesLike,
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
 
     appropriateUpdateIntervalId(
       timestamp: BigNumberish,
@@ -1057,7 +1199,7 @@ export class PoolSwapLibrary extends BaseContract {
       tokenSupply: BigNumberish,
       amountIn: BigNumberish,
       balance: BigNumberish,
-      shadowBalance: BigNumberish,
+      pendingBurnPoolTokens: BigNumberish,
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 
@@ -1087,12 +1229,12 @@ export class PoolSwapLibrary extends BaseContract {
         shortPrice: BytesLike;
         currentUpdateIntervalId: BigNumberish;
         updateIntervalId: BigNumberish;
-        longMintAmount: BigNumberish;
-        longBurnAmount: BigNumberish;
-        shortMintAmount: BigNumberish;
-        shortBurnAmount: BigNumberish;
-        longBurnShortMintAmount: BigNumberish;
-        shortBurnLongMintAmount: BigNumberish;
+        longMintSettlement: BigNumberish;
+        longBurnPoolTokens: BigNumberish;
+        shortMintSettlement: BigNumberish;
+        shortBurnPoolTokens: BigNumberish;
+        longBurnShortMintPoolTokens: BigNumberish;
+        shortBurnLongMintPoolTokens: BigNumberish;
         burnFee: BytesLike;
       },
       overrides?: CallOverrides
@@ -1102,7 +1244,7 @@ export class PoolSwapLibrary extends BaseContract {
       tokenSupply: BigNumberish,
       amountIn: BigNumberish,
       balance: BigNumberish,
-      shadowBalance: BigNumberish,
+      pendingBurnPoolTokens: BigNumberish,
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 
@@ -1121,12 +1263,22 @@ export class PoolSwapLibrary extends BaseContract {
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 
+    multiplyBytes(
+      x: BytesLike,
+      y: BytesLike,
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
+
     multiplyDecimalByUInt(
       a: BytesLike,
       b: BigNumberish,
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 
-    one(overrides?: CallOverrides): Promise<PopulatedTransaction>;
+    subtractBytes(
+      x: BytesLike,
+      y: BytesLike,
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
   };
 }

@@ -22,11 +22,10 @@ import { TypedEventFilter, TypedEvent, TypedListener } from "./commons";
 interface IPoolKeeperInterface extends ethers.utils.Interface {
   functions: {
     "checkUpkeepMultiplePools(address[])": FunctionFragment;
-    "checkUpkeepSinglePool(address)": FunctionFragment;
+    "isUpkeepRequiredSinglePool(address)": FunctionFragment;
     "newPool(address)": FunctionFragment;
     "performUpkeepMultiplePools(address[])": FunctionFragment;
     "performUpkeepSinglePool(address)": FunctionFragment;
-    "setFactory(address)": FunctionFragment;
   };
 
   encodeFunctionData(
@@ -34,7 +33,7 @@ interface IPoolKeeperInterface extends ethers.utils.Interface {
     values: [string[]]
   ): string;
   encodeFunctionData(
-    functionFragment: "checkUpkeepSinglePool",
+    functionFragment: "isUpkeepRequiredSinglePool",
     values: [string]
   ): string;
   encodeFunctionData(functionFragment: "newPool", values: [string]): string;
@@ -46,14 +45,13 @@ interface IPoolKeeperInterface extends ethers.utils.Interface {
     functionFragment: "performUpkeepSinglePool",
     values: [string]
   ): string;
-  encodeFunctionData(functionFragment: "setFactory", values: [string]): string;
 
   decodeFunctionResult(
     functionFragment: "checkUpkeepMultiplePools",
     data: BytesLike
   ): Result;
   decodeFunctionResult(
-    functionFragment: "checkUpkeepSinglePool",
+    functionFragment: "isUpkeepRequiredSinglePool",
     data: BytesLike
   ): Result;
   decodeFunctionResult(functionFragment: "newPool", data: BytesLike): Result;
@@ -65,9 +63,10 @@ interface IPoolKeeperInterface extends ethers.utils.Interface {
     functionFragment: "performUpkeepSinglePool",
     data: BytesLike
   ): Result;
-  decodeFunctionResult(functionFragment: "setFactory", data: BytesLike): Result;
 
   events: {
+    "FactoryChanged(address)": EventFragment;
+    "GasPriceChanged(uint256)": EventFragment;
     "KeeperPaid(address,address,uint256)": EventFragment;
     "KeeperPaymentError(address,address,uint256)": EventFragment;
     "PoolAdded(address,int256)": EventFragment;
@@ -75,6 +74,8 @@ interface IPoolKeeperInterface extends ethers.utils.Interface {
     "UpkeepSuccessful(address,bytes,int256,int256)": EventFragment;
   };
 
+  getEvent(nameOrSignatureOrTopic: "FactoryChanged"): EventFragment;
+  getEvent(nameOrSignatureOrTopic: "GasPriceChanged"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "KeeperPaid"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "KeeperPaymentError"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "PoolAdded"): EventFragment;
@@ -131,7 +132,7 @@ export class IPoolKeeper extends BaseContract {
       overrides?: CallOverrides
     ): Promise<[boolean]>;
 
-    checkUpkeepSinglePool(
+    isUpkeepRequiredSinglePool(
       pool: string,
       overrides?: CallOverrides
     ): Promise<[boolean]>;
@@ -150,11 +151,6 @@ export class IPoolKeeper extends BaseContract {
       pool: string,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<ContractTransaction>;
-
-    setFactory(
-      _factory: string,
-      overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<ContractTransaction>;
   };
 
   checkUpkeepMultiplePools(
@@ -162,7 +158,7 @@ export class IPoolKeeper extends BaseContract {
     overrides?: CallOverrides
   ): Promise<boolean>;
 
-  checkUpkeepSinglePool(
+  isUpkeepRequiredSinglePool(
     pool: string,
     overrides?: CallOverrides
   ): Promise<boolean>;
@@ -182,18 +178,13 @@ export class IPoolKeeper extends BaseContract {
     overrides?: Overrides & { from?: string | Promise<string> }
   ): Promise<ContractTransaction>;
 
-  setFactory(
-    _factory: string,
-    overrides?: Overrides & { from?: string | Promise<string> }
-  ): Promise<ContractTransaction>;
-
   callStatic: {
     checkUpkeepMultiplePools(
       pools: string[],
       overrides?: CallOverrides
     ): Promise<boolean>;
 
-    checkUpkeepSinglePool(
+    isUpkeepRequiredSinglePool(
       pool: string,
       overrides?: CallOverrides
     ): Promise<boolean>;
@@ -209,11 +200,17 @@ export class IPoolKeeper extends BaseContract {
       pool: string,
       overrides?: CallOverrides
     ): Promise<void>;
-
-    setFactory(_factory: string, overrides?: CallOverrides): Promise<void>;
   };
 
   filters: {
+    FactoryChanged(
+      factory?: string | null
+    ): TypedEventFilter<[string], { factory: string }>;
+
+    GasPriceChanged(
+      price?: BigNumberish | null
+    ): TypedEventFilter<[BigNumber], { price: BigNumber }>;
+
     KeeperPaid(
       _pool?: string | null,
       keeper?: string | null,
@@ -262,7 +259,7 @@ export class IPoolKeeper extends BaseContract {
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
-    checkUpkeepSinglePool(
+    isUpkeepRequiredSinglePool(
       pool: string,
       overrides?: CallOverrides
     ): Promise<BigNumber>;
@@ -279,11 +276,6 @@ export class IPoolKeeper extends BaseContract {
 
     performUpkeepSinglePool(
       pool: string,
-      overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<BigNumber>;
-
-    setFactory(
-      _factory: string,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<BigNumber>;
   };
@@ -294,7 +286,7 @@ export class IPoolKeeper extends BaseContract {
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 
-    checkUpkeepSinglePool(
+    isUpkeepRequiredSinglePool(
       pool: string,
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
@@ -311,11 +303,6 @@ export class IPoolKeeper extends BaseContract {
 
     performUpkeepSinglePool(
       pool: string,
-      overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<PopulatedTransaction>;
-
-    setFactory(
-      _factory: string,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<PopulatedTransaction>;
   };

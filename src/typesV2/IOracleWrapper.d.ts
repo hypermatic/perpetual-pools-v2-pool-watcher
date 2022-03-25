@@ -21,6 +21,7 @@ import { TypedEventFilter, TypedEvent, TypedListener } from "./commons";
 
 interface IOracleWrapperInterface extends ethers.utils.Interface {
   functions: {
+    "decimals()": FunctionFragment;
     "deployer()": FunctionFragment;
     "fromWad(int256)": FunctionFragment;
     "getPrice()": FunctionFragment;
@@ -29,6 +30,7 @@ interface IOracleWrapperInterface extends ethers.utils.Interface {
     "poll()": FunctionFragment;
   };
 
+  encodeFunctionData(functionFragment: "decimals", values?: undefined): string;
   encodeFunctionData(functionFragment: "deployer", values?: undefined): string;
   encodeFunctionData(
     functionFragment: "fromWad",
@@ -42,6 +44,7 @@ interface IOracleWrapperInterface extends ethers.utils.Interface {
   encodeFunctionData(functionFragment: "oracle", values?: undefined): string;
   encodeFunctionData(functionFragment: "poll", values?: undefined): string;
 
+  decodeFunctionResult(functionFragment: "decimals", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "deployer", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "fromWad", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "getPrice", data: BytesLike): Result;
@@ -99,6 +102,8 @@ export class IOracleWrapper extends BaseContract {
   interface: IOracleWrapperInterface;
 
   functions: {
+    decimals(overrides?: CallOverrides): Promise<[number]>;
+
     deployer(overrides?: CallOverrides): Promise<[string]>;
 
     fromWad(wad: BigNumberish, overrides?: CallOverrides): Promise<[BigNumber]>;
@@ -115,6 +120,8 @@ export class IOracleWrapper extends BaseContract {
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<ContractTransaction>;
   };
+
+  decimals(overrides?: CallOverrides): Promise<number>;
 
   deployer(overrides?: CallOverrides): Promise<string>;
 
@@ -133,6 +140,8 @@ export class IOracleWrapper extends BaseContract {
   ): Promise<ContractTransaction>;
 
   callStatic: {
+    decimals(overrides?: CallOverrides): Promise<number>;
+
     deployer(overrides?: CallOverrides): Promise<string>;
 
     fromWad(wad: BigNumberish, overrides?: CallOverrides): Promise<BigNumber>;
@@ -151,6 +160,8 @@ export class IOracleWrapper extends BaseContract {
   filters: {};
 
   estimateGas: {
+    decimals(overrides?: CallOverrides): Promise<BigNumber>;
+
     deployer(overrides?: CallOverrides): Promise<BigNumber>;
 
     fromWad(wad: BigNumberish, overrides?: CallOverrides): Promise<BigNumber>;
@@ -167,6 +178,8 @@ export class IOracleWrapper extends BaseContract {
   };
 
   populateTransaction: {
+    decimals(overrides?: CallOverrides): Promise<PopulatedTransaction>;
+
     deployer(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
     fromWad(

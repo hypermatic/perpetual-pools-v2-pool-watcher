@@ -13,6 +13,56 @@ const _abi = [
       {
         indexed: true,
         internalType: "address",
+        name: "autoClaim",
+        type: "address",
+      },
+    ],
+    name: "AutoClaimChanged",
+    type: "event",
+  },
+  {
+    anonymous: false,
+    inputs: [
+      {
+        indexed: false,
+        internalType: "address",
+        name: "poolCommitterAddress",
+        type: "address",
+      },
+      {
+        indexed: false,
+        internalType: "address",
+        name: "settlementToken",
+        type: "address",
+      },
+      {
+        indexed: false,
+        internalType: "address",
+        name: "pool",
+        type: "address",
+      },
+      {
+        indexed: false,
+        internalType: "uint256",
+        name: "changeInterval",
+        type: "uint256",
+      },
+      {
+        indexed: false,
+        internalType: "address",
+        name: "feeController",
+        type: "address",
+      },
+    ],
+    name: "DeployCommitter",
+    type: "event",
+  },
+  {
+    anonymous: false,
+    inputs: [
+      {
+        indexed: true,
+        internalType: "address",
         name: "pool",
         type: "address",
       },
@@ -36,6 +86,77 @@ const _abi = [
     anonymous: false,
     inputs: [
       {
+        indexed: true,
+        internalType: "uint256",
+        name: "fee",
+        type: "uint256",
+      },
+    ],
+    name: "FeeChanged",
+    type: "event",
+  },
+  {
+    anonymous: false,
+    inputs: [
+      {
+        indexed: true,
+        internalType: "address",
+        name: "receiver",
+        type: "address",
+      },
+    ],
+    name: "FeeReceiverChanged",
+    type: "event",
+  },
+  {
+    anonymous: false,
+    inputs: [
+      {
+        indexed: true,
+        internalType: "address",
+        name: "invariantCheck",
+        type: "address",
+      },
+    ],
+    name: "InvariantCheckChanged",
+    type: "event",
+  },
+  {
+    anonymous: false,
+    inputs: [
+      {
+        indexed: true,
+        internalType: "uint256",
+        name: "leverage",
+        type: "uint256",
+      },
+    ],
+    name: "MaxLeverageChanged",
+    type: "event",
+  },
+  {
+    anonymous: false,
+    inputs: [
+      {
+        indexed: true,
+        internalType: "uint256",
+        name: "mint",
+        type: "uint256",
+      },
+      {
+        indexed: true,
+        internalType: "uint256",
+        name: "burn",
+        type: "uint256",
+      },
+    ],
+    name: "MintAndBurnFeesChanged",
+    type: "event",
+  },
+  {
+    anonymous: false,
+    inputs: [
+      {
         indexed: false,
         internalType: "address",
         name: "_poolKeeper",
@@ -43,6 +164,19 @@ const _abi = [
       },
     ],
     name: "PoolKeeperChanged",
+    type: "event",
+  },
+  {
+    anonymous: false,
+    inputs: [
+      {
+        indexed: true,
+        internalType: "uint256",
+        name: "fee",
+        type: "uint256",
+      },
+    ],
+    name: "SecondaryFeeSplitChanged",
     type: "event",
   },
   {
@@ -71,7 +205,7 @@ const _abi = [
           },
           {
             internalType: "address",
-            name: "quoteToken",
+            name: "settlementToken",
             type: "address",
           },
           {
@@ -86,8 +220,23 @@ const _abi = [
           },
           {
             internalType: "address",
-            name: "invariantCheckContract",
+            name: "feeController",
             type: "address",
+          },
+          {
+            internalType: "uint256",
+            name: "mintingFee",
+            type: "uint256",
+          },
+          {
+            internalType: "uint256",
+            name: "changeInterval",
+            type: "uint256",
+          },
+          {
+            internalType: "uint256",
+            name: "burningFee",
+            type: "uint256",
           },
         ],
         internalType: "struct IPoolFactory.PoolDeployment",
@@ -96,19 +245,6 @@ const _abi = [
       },
     ],
     name: "deployPool",
-    outputs: [
-      {
-        internalType: "address",
-        name: "",
-        type: "address",
-      },
-    ],
-    stateMutability: "nonpayable",
-    type: "function",
-  },
-  {
-    inputs: [],
-    name: "getOwner",
     outputs: [
       {
         internalType: "address",
@@ -231,30 +367,12 @@ const _abi = [
   {
     inputs: [
       {
-        internalType: "uint16",
-        name: "newMaxLeverage",
-        type: "uint16",
+        internalType: "address",
+        name: "_invariantCheck",
+        type: "address",
       },
     ],
-    name: "setMaxLeverage",
-    outputs: [],
-    stateMutability: "nonpayable",
-    type: "function",
-  },
-  {
-    inputs: [
-      {
-        internalType: "uint256",
-        name: "_mintingFee",
-        type: "uint256",
-      },
-      {
-        internalType: "uint256",
-        name: "_burningFee",
-        type: "uint256",
-      },
-    ],
-    name: "setMintAndBurnFee",
+    name: "setInvariantCheck",
     outputs: [],
     stateMutability: "nonpayable",
     type: "function",

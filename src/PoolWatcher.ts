@@ -17,32 +17,28 @@ import {
 import {
   poolSwapLibraryAddresses,
   attemptPromiseRecursively,
-  ethersBNtoBN
+  ethersBNtoBN,
+  movingAveragePriceTransformer
 } from './utils';
 
 import {
   PoolWatcherConstructorArgs,
   WatchedPool,
-  CalculatedPoolState,
+  ExpectedPoolState,
   TotalPoolCommitments,
   TotalPoolCommitmentsBN,
   CommitEventData,
   UpkeepEventData,
-  RawCommitType
+  RawCommitType,
+  ExpectedPoolStateInputs
 } from './types';
+import { EVENT_NAMES } from './constants';
 
-export const EVENT_NAMES = {
-  COMMITMENT_WINDOW_ENDING: 'COMMITMENT_WINDOW_ENDING',
-  COMMITMENT_WINDOW_ENDED: 'COMMITMENT_WINDOW_ENDED',
-  UPKEEP: 'UPKEEP',
-  COMMIT: 'COMMIT'
-} as const;
-
-interface PoolWatcherEvents {
+export interface PoolWatcherEvents {
   [EVENT_NAMES.COMMIT]: (data: CommitEventData) => void;
   [EVENT_NAMES.UPKEEP]: (data: UpkeepEventData) => void;
   [EVENT_NAMES.COMMITMENT_WINDOW_ENDED]: () => void;
-  [EVENT_NAMES.COMMITMENT_WINDOW_ENDING]: (state: CalculatedPoolState) => void;
+  [EVENT_NAMES.COMMITMENT_WINDOW_ENDING]: (state: ExpectedPoolState) => void;
 }
 
 export class PoolWatcher extends TypedEmitter<PoolWatcherEvents> {
@@ -54,12 +50,13 @@ export class PoolWatcher extends TypedEmitter<PoolWatcherEvents> {
   chainId: string
   commitmentWindowBuffer: number
   isWatching: boolean
+  oraclePriceTransformer: (lastPrice: BigNumber, currentPrice: BigNumber) => BigNumber
 
   constructor (args: PoolWatcherConstructorArgs) {
     super();
 
     if (!poolSwapLibraryAddresses[args.chainId]) {
-      throw new Error(`unsupported chainId: ${args.chainId}, supported values are ${Object.keys(poolSwapLibraryAddresses).join(', ')}`);
+      throw new Error(`unsupported chainId: ${args.chainId}, supported values are [${Object.keys(poolSwapLibraryAddresses).join(', ')}]`);
     }
 
     this.provider = ethers.getDefaultProvider(args.nodeUrl);
@@ -70,6 +67,7 @@ export class PoolWatcher extends TypedEmitter<PoolWatcherEvents> {
     this.watchedPool = {} as WatchedPool;
     this.commitmentWindowBuffer = args.commitmentWindowBuffer;
     this.isWatching = false;
+    this.oraclePriceTransformer = args.oraclePriceTransformer || movingAveragePriceTransformer;
   }
 
   // fetches details about pool to watch and
@@ -82,7 +80,7 @@ export class PoolWatcher extends TypedEmitter<PoolWatcherEvents> {
       updateInterval,
       _leverageAmount,
       frontRunningInterval,
-      quoteTokenAddress,
+      settlementTokenAddress,
       longTokenAddress,
       shortTokenAddress,
       lastPriceTimestamp
@@ -93,7 +91,7 @@ export class PoolWatcher extends TypedEmitter<PoolWatcherEvents> {
       attemptPromiseRecursively({ promise: () => this.poolInstance.updateInterval() }),
       attemptPromiseRecursively({ promise: () => this.poolInstance.leverageAmount() }),
       attemptPromiseRecursively({ promise: () => this.poolInstance.frontRunningInterval() }),
-      attemptPromiseRecursively({ promise: () => this.poolInstance.quoteToken() }),
+      attemptPromiseRecursively({ promise: () => this.poolInstance.settlementToken() }),
       attemptPromiseRecursively({ promise: () => this.poolInstance.tokens(0) }),
       attemptPromiseRecursively({ promise: () => this.poolInstance.tokens(1) }),
       attemptPromiseRecursively({ promise: () => this.poolInstance.lastPriceTimestamp() })
@@ -114,7 +112,7 @@ export class PoolWatcher extends TypedEmitter<PoolWatcherEvents> {
       lastPriceTimestamp: lastPriceTimestamp.toNumber(),
       longTokenInstance: ERC20__factory.connect(longTokenAddress, this.provider),
       shortTokenInstance: ERC20__factory.connect(shortTokenAddress, this.provider),
-      quoteTokenInstance: ERC20__factory.connect(quoteTokenAddress, this.provider),
+      settlementTokenInstance: ERC20__factory.connect(settlementTokenAddress, this.provider),
       isUpdatingLastPriceTimestamp: false,
       hasCalculatedStateThisUpdate: false
     };
@@ -124,60 +122,61 @@ export class PoolWatcher extends TypedEmitter<PoolWatcherEvents> {
    *
    * @returns
    */
-  async getRelevantPendingCommits (): Promise<TotalPoolCommitments[]> {
-    if (this.watchedPool.address) {
+  async getRelevantPendingCommits (): Promise<TotalPoolCommitmentsBN[]> {
+    if (!this.watchedPool.address) {
       throw new Error('getRelevantPendingCommits: watched pool not initialised');
     }
 
     const { frontRunningInterval, updateInterval, committerInstance } = this.watchedPool;
 
+    // next update interval to be upkept
+    const updateIntervalId = (await attemptPromiseRecursively({
+      promise: () => this.watchedPool.committerInstance.updateIntervalId()
+    })).toNumber();
+
     if (frontRunningInterval < updateInterval) {
       // simple case, commits will be executed either in next upkeep or one after if committed within the front running interval
-      const [pendingCommitsThisInterval, pendingCommitsNextInterval] = await attemptPromiseRecursively({
-        promise: () => committerInstance.getPendingCommits()
-      });
+      return attemptPromiseRecursively({
+        promise: async () => {
+          const pendingCommitsThisInterval = await committerInstance.totalPoolCommitments(updateIntervalId);
 
-      return [
-        pendingCommitsThisInterval,
-        pendingCommitsNextInterval
-      ];
+          return [this.pendingCommitsToBN(pendingCommitsThisInterval)];
+        }
+      });
     }
 
     const upkeepsPerFrontRunningInterval = Math.floor(frontRunningInterval / updateInterval);
-
-    const pendingCommitPromises: Promise<TotalPoolCommitments>[] = [];
-
-    // next update interval to be upkept
-    const updateIntervalId = await attemptPromiseRecursively({
-      promise: () => this.poolInstance.updateInterval()
-    });
+    const pendingCommitPromises: Promise<TotalPoolCommitmentsBN>[] = [];
 
     // the last update interval that will be executed in the frontrunning interval as of now
-    const maxIntervalId = updateIntervalId + upkeepsPerFrontRunningInterval - 1;
+    const maxIntervalId = updateIntervalId + upkeepsPerFrontRunningInterval;
 
-    for (let i = updateIntervalId; i < maxIntervalId; i++) {
+    for (let i = updateIntervalId; i <= maxIntervalId; i++) {
       pendingCommitPromises.push(attemptPromiseRecursively({
-        promise: () => committerInstance.totalPoolCommitments(i)
+        promise: async () => {
+          const pendingCommitsThisInterval = await committerInstance.totalPoolCommitments(i);
+          return this.pendingCommitsToBN(pendingCommitsThisInterval);
+        }
       }));
     }
 
-    return await Promise.all(pendingCommitPromises);
+    return Promise.all(pendingCommitPromises);
   }
 
   pendingCommitsToBN (pendingCommits: TotalPoolCommitments): TotalPoolCommitmentsBN {
     return {
-      longBurnAmount: ethersBNtoBN(pendingCommits.longBurnAmount),
-      longMintAmount: ethersBNtoBN(pendingCommits.longMintAmount),
-      longBurnShortMintAmount: ethersBNtoBN(pendingCommits.longBurnShortMintAmount),
-      shortBurnAmount: ethersBNtoBN(pendingCommits.shortBurnAmount),
-      shortMintAmount: ethersBNtoBN(pendingCommits.shortMintAmount),
-      shortBurnLongMintAmount: ethersBNtoBN(pendingCommits.shortBurnLongMintAmount),
+      longBurnPoolTokens: ethersBNtoBN(pendingCommits.longBurnPoolTokens),
+      longMintSettlement: ethersBNtoBN(pendingCommits.longMintSettlement),
+      longBurnShortMintPoolTokens: ethersBNtoBN(pendingCommits.longBurnShortMintPoolTokens),
+      shortBurnPoolTokens: ethersBNtoBN(pendingCommits.shortBurnPoolTokens),
+      shortMintSettlement: ethersBNtoBN(pendingCommits.shortMintSettlement),
+      shortBurnLongMintPoolTokens: ethersBNtoBN(pendingCommits.shortBurnLongMintPoolTokens),
       updateIntervalId: ethersBNtoBN(pendingCommits.updateIntervalId)
     };
   }
 
   async isCommitmentWindowStillOpen (updateIntervalId: number) {
-    if (this.watchedPool.address) {
+    if (!this.watchedPool.address) {
       throw new Error('isCommitmentWindowStillOpen: watched pool not initialised');
     }
 
@@ -188,16 +187,16 @@ export class PoolWatcher extends TypedEmitter<PoolWatcherEvents> {
     return appropriateUpdateIntervalId.eq(updateIntervalId);
   }
 
-  async calculateState (): Promise<CalculatedPoolState> {
-    if (this.watchedPool.address) {
-      throw new Error('calculateState: watched pool not initialised');
+  async getExpectedStateInputs (): Promise<ExpectedPoolStateInputs> {
+    if (!this.watchedPool.address) {
+      throw new Error('getExpectedStateInput: watched pool not initialised');
     }
 
     const { leverage, longTokenInstance, shortTokenInstance, keeperInstance } = this.watchedPool;
 
     const [
-      _longBalance,
-      _shortBalance,
+      longBalance,
+      shortBalance,
       currentOraclePrice,
       lastOraclePrice,
       pendingCommits,
@@ -213,8 +212,33 @@ export class PoolWatcher extends TypedEmitter<PoolWatcherEvents> {
       attemptPromiseRecursively({ promise: () => shortTokenInstance.totalSupply() })
     ]);
 
-    const longBalance = ethersBNtoBN(_longBalance);
-    const shortBalance = ethersBNtoBN(_shortBalance);
+    return {
+      leverage,
+      longBalance: ethersBNtoBN(longBalance),
+      shortBalance: ethersBNtoBN(shortBalance),
+      lastOraclePrice: ethersBNtoBN(lastOraclePrice),
+      currentOraclePrice: ethersBNtoBN(currentOraclePrice),
+      pendingCommits,
+      longTokenSupply: ethersBNtoBN(longTokenSupply),
+      shortTokenSupply: ethersBNtoBN(shortTokenSupply)
+    };
+  }
+
+  calculatePoolState (inputs: ExpectedPoolStateInputs): ExpectedPoolState {
+    if (!this.watchedPool.address) {
+      throw new Error('calculatePoolState: watched pool not initialised');
+    }
+
+    const {
+      leverage,
+      longBalance,
+      shortBalance,
+      longTokenSupply,
+      shortTokenSupply,
+      lastOraclePrice,
+      currentOraclePrice,
+      pendingCommits
+    } = inputs;
 
     let expectedLongBalance = new BigNumber(longBalance.toString());
     let expectedShortBalance = new BigNumber(shortBalance.toString());
@@ -225,47 +249,54 @@ export class PoolWatcher extends TypedEmitter<PoolWatcherEvents> {
     let expectedLongTokenPrice = expectedLongBalance.div(expectedLongSupply);
     let expectedShortTokenPrice = expectedShortBalance.div(expectedShortSupply);
 
+    let movingOraclePriceBefore = lastOraclePrice;
+    let movingOraclePriceAfter = lastOraclePrice;
+
     for (const pendingCommit of pendingCommits) {
       const {
-        longBurnAmount,
-        longBurnShortMintAmount,
-        longMintAmount,
-        shortBurnAmount,
-        shortBurnLongMintAmount,
-        shortMintAmount
-      } = this.pendingCommitsToBN(pendingCommit);
+        longBurnPoolTokens,
+        longBurnShortMintPoolTokens,
+        longMintSettlement,
+        shortBurnPoolTokens,
+        shortBurnLongMintPoolTokens,
+        shortMintSettlement
+      } = pendingCommit;
+
+      // apply price transformations to emulate underlying oracle wrapper implementation
+      movingOraclePriceBefore = movingOraclePriceAfter;
+      movingOraclePriceAfter = this.oraclePriceTransformer(movingOraclePriceBefore, currentOraclePrice);
 
       const { longValueTransfer, shortValueTransfer } = calcNextValueTransfer(
-        ethersBNtoBN(lastOraclePrice),
-        ethersBNtoBN(currentOraclePrice), // TODO, emulate SMA using current oracle price
+        movingOraclePriceBefore,
+        movingOraclePriceAfter,
         new BigNumber(leverage),
-        longBalance,
-        shortBalance
+        expectedLongBalance,
+        expectedShortBalance
       );
 
       // balances immediately before commits executed
-      const _expectedLongBalance = expectedLongBalance.plus(longValueTransfer);
-      const _expectedShortBalance = expectedShortBalance.plus(shortValueTransfer);
+      expectedLongBalance = expectedLongBalance.plus(longValueTransfer);
+      expectedShortBalance = expectedShortBalance.plus(shortValueTransfer);
 
-      const totalLongBurn = longBurnAmount.plus(longBurnShortMintAmount);
-      const totalShortBurn = shortBurnAmount.plus(shortBurnLongMintAmount);
+      const totalLongBurn = longBurnPoolTokens.plus(longBurnShortMintPoolTokens);
+      const totalShortBurn = shortBurnPoolTokens.plus(shortBurnLongMintPoolTokens);
 
       // current balance + expected value transfer / expected supply
       // if either side has no token supply, any amount no matter how small will buy the whole side
       const longTokenPriceDenominator = expectedLongSupply.plus(totalLongBurn);
 
       expectedLongTokenPrice = longTokenPriceDenominator.lte(0)
-        ? _expectedLongBalance
-        : _expectedLongBalance.div(longTokenPriceDenominator);
+        ? expectedLongBalance
+        : expectedLongBalance.div(longTokenPriceDenominator);
 
       const shortTokenPriceDenominator = expectedShortSupply.plus(totalShortBurn);
 
       expectedShortTokenPrice = shortTokenPriceDenominator.lte(0)
-        ? _expectedShortBalance
-        : _expectedShortBalance.div(shortTokenPriceDenominator);
+        ? expectedShortBalance
+        : expectedShortBalance.div(shortTokenPriceDenominator);
 
-      const totalLongMint = longMintAmount.plus(shortBurnLongMintAmount.times(expectedShortTokenPrice));
-      const totalShortMint = shortMintAmount.plus(longBurnShortMintAmount.times(expectedLongTokenPrice));
+      const totalLongMint = longMintSettlement.plus(shortBurnLongMintPoolTokens.times(expectedShortTokenPrice));
+      const totalShortMint = shortMintSettlement.plus(longBurnShortMintPoolTokens.times(expectedLongTokenPrice));
 
       const netPendingLongBalance = totalLongMint.minus(totalLongBurn.times(expectedLongTokenPrice));
       const netPendingShortBalance = totalShortMint.minus(totalShortBurn.times(expectedShortTokenPrice));
@@ -281,21 +312,16 @@ export class PoolWatcher extends TypedEmitter<PoolWatcherEvents> {
     }
 
     const expectedSkew = expectedShortBalance.eq(0) || expectedLongBalance.eq(0)
-      ? 1
-      : expectedLongBalance.div(expectedShortBalance).toNumber();
-
-    const appropriateUpdateIntervalId = await attemptPromiseRecursively({
-      promise: () => this.watchedPool.committerInstance.getAppropriateUpdateIntervalId()
-    });
+      ? new BigNumber(1)
+      : expectedLongBalance.div(expectedShortBalance);
 
     return {
       timestamp: Math.floor(Date.now() / 1000),
-      appropriateUpdateIntervalId: appropriateUpdateIntervalId.toNumber(),
-      currentSkew: longBalance.eq(0) || shortBalance.eq(0) ? 1 : longBalance.div(shortBalance).toNumber(),
+      currentSkew: longBalance.eq(0) || shortBalance.eq(0) ? new BigNumber(1) : longBalance.div(shortBalance),
       currentLongBalance: longBalance,
-      currentLongSupply: ethersBNtoBN(longTokenSupply),
+      currentLongSupply: longTokenSupply,
       currentShortBalance: shortBalance,
-      currentShortSupply: ethersBNtoBN(shortTokenSupply),
+      currentShortSupply: shortTokenSupply,
       expectedSkew,
       expectedLongBalance,
       expectedLongSupply,
@@ -304,7 +330,10 @@ export class PoolWatcher extends TypedEmitter<PoolWatcherEvents> {
       totalNetPendingLong,
       totalNetPendingShort,
       expectedLongTokenPrice,
-      expectedShortTokenPrice
+      expectedShortTokenPrice,
+      lastOraclePrice: lastOraclePrice,
+      expectedOraclePrice: movingOraclePriceAfter,
+      pendingCommits
     };
   }
 
@@ -322,8 +351,6 @@ export class PoolWatcher extends TypedEmitter<PoolWatcherEvents> {
     const upkeepSuccessfulFilter = this.watchedPool.keeperInstance.filters.UpkeepSuccessful(this.poolAddress);
 
     const scheduleStateCalculation = async () => {
-      console.log('scheduling state calculation');
-
       const [
         lastPriceTimestampEthersBN,
         appropriateIntervalIdBefore
@@ -331,8 +358,6 @@ export class PoolWatcher extends TypedEmitter<PoolWatcherEvents> {
         attemptPromiseRecursively({ promise: () => this.poolInstance.lastPriceTimestamp() }),
         attemptPromiseRecursively({ promise: () => this.watchedPool.committerInstance.getAppropriateUpdateIntervalId() })
       ]);
-
-      console.log(`appropriate interval id before sleeping is ${appropriateIntervalIdBefore.toNumber()}`);
 
       const { frontRunningInterval, updateInterval } = this.watchedPool as WatchedPool;
 
@@ -348,55 +373,38 @@ export class PoolWatcher extends TypedEmitter<PoolWatcherEvents> {
 
       const nowSeconds = Math.floor(Date.now() / 1000);
 
-      console.log(`last price was at ${lastPriceTimestamp} (${nowSeconds - lastPriceTimestamp} seconds ago)`);
-      console.log(`commitment window ends in at ${commitmentWindowEnd} (${commitmentWindowEnd - nowSeconds} seconds from now)`);
-      console.log(`waiting for ${waitUntil - nowSeconds} seconds to calculate state`);
-
       // if we are already past the start of the acceptable commitment window end
       // do nothing and wait until next upkeep to schedule anything
       if (nowSeconds > waitUntil) {
-        console.log(`${nowSeconds} is already past waitUntil of ${waitUntil}, waiting for upkeep`);
         this.watchedPool.keeperInstance.once(upkeepSuccessfulFilter, () => {
-          console.log('[1] got the upkeep, scheduling next state calculation');
-
           scheduleStateCalculation();
-          // get seconds until commitment window closes (minus a buffer)
-          // set a timeout to wake up, check if appropriateUpdateInterval is still the
         });
       } else {
         // set time out for waitUntil - nowSeconds
-        // wake up and check if lastUpdateIntervalId is same as new
-        console.log(`setting timeout for ${(waitUntil - nowSeconds) * 1000} to wake up and calculate state`);
-
+        // wake up and check if we are still inside of the same commitment window
         setTimeout(async () => {
-          console.log('woke up from timeout, checking for valid update interval id');
-
-          const commitmentWindowOpenPreStateCalc = await this.isCommitmentWindowStillOpen(
+          const updateIntervalBeforeStateCalc = await this.isCommitmentWindowStillOpen(
             appropriateIntervalIdBefore.toNumber()
           );
 
           // if the appropriate update interval id is still the same as before we slept,
           // we are still within the acceptable commitment window
-          if (commitmentWindowOpenPreStateCalc) {
-            console.log('interval id still valid, calculating state');
+          if (updateIntervalBeforeStateCalc) {
+            const expectedStateInputs = await this.getExpectedStateInputs();
 
-            const calculatedState = await this.calculateState();
+            const expectedState = this.calculatePoolState(expectedStateInputs);
 
-            console.log(`performing final interval id check ${calculatedState.appropriateUpdateIntervalId}`);
+            // do one last check to make sure commitment window has not ended
+            const updateIntervalIdAfterStateCalc = await attemptPromiseRecursively({
+              promise: () => this.watchedPool.committerInstance.getAppropriateUpdateIntervalId()
+            });
 
-            if (appropriateIntervalIdBefore.eq(calculatedState.appropriateUpdateIntervalId)) {
-              console.log('final interval check passed, emitting calculated state');
-              this.emit(EVENT_NAMES.COMMITMENT_WINDOW_ENDING, calculatedState);
-            } else {
-              console.log('final check interval id no longer valid, waiting for next upkeep');
+            if (appropriateIntervalIdBefore.eq(updateIntervalIdAfterStateCalc)) {
+              this.emit(EVENT_NAMES.COMMITMENT_WINDOW_ENDING, expectedState);
             }
-          } else {
-            console.log('first awaken interval id no longer valid, waiting for next upkeep');
           }
 
           this.watchedPool.keeperInstance.once(upkeepSuccessfulFilter, () => {
-            console.log('[2] got the upkeep, scheduling next state calculation');
-
             scheduleStateCalculation();
           });
         }, (waitUntil - nowSeconds) * 1000);
@@ -407,22 +415,49 @@ export class PoolWatcher extends TypedEmitter<PoolWatcherEvents> {
 
     const createCommitFilter = this.watchedPool.committerInstance.filters.CreateCommit();
 
-    this.watchedPool.committerInstance.on(createCommitFilter, (user, amount, commitType, appropriateIntervalId, mintingFee) => {
+    this.watchedPool.committerInstance.on(createCommitFilter, async (
+      user,
+      amount,
+      commitType,
+      appropriateIntervalId,
+      fromAggregateBalance,
+      payForClaim,
+      mintingFee,
+      event
+    ) => {
+      const block = await event.getBlock();
+
       this.emit(EVENT_NAMES.COMMIT, {
         user,
         amount: ethersBNtoBN(amount),
         commitType: commitType as RawCommitType,
         appropriateIntervalId: appropriateIntervalId.toNumber(),
-        mintingFee
+        fromAggregateBalance,
+        payForClaim,
+        mintingFee,
+        txHash: event.transactionHash,
+        blockNumber: event.blockNumber,
+        timestamp: block.timestamp
       });
     });
 
-    this.watchedPool.keeperInstance.on(upkeepSuccessfulFilter, (poolAddress, data, startPrice, endPrice) => {
+    this.watchedPool.keeperInstance.on(upkeepSuccessfulFilter, async (
+      poolAddress,
+      data,
+      startPrice,
+      endPrice,
+      event
+    ) => {
+      const block = await event.getBlock();
+
       this.emit(EVENT_NAMES.UPKEEP, {
         poolAddress,
         data,
         startPrice: ethersBNtoBN(startPrice),
-        endPrice: ethersBNtoBN(endPrice)
+        endPrice: ethersBNtoBN(endPrice),
+        txHash: event.transactionHash,
+        blockNumber: event.blockNumber,
+        timestamp: block.timestamp
       });
     });
   }

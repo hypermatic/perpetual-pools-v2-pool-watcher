@@ -1,6 +1,6 @@
 {
   "name": "@tracer-protocol/perpetual-pools-v2-pool-watcher",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "tracer perpetual pool watcher that can act as a building block for various types of bots",
   "main": "index.js",
   "typings": "index.d.ts",
@@ -19,9 +19,11 @@
     "@typescript-eslint/eslint-plugin": "^4.28.2",
     "@typescript-eslint/parser": "^5.14.0",
     "eslint": "^7.30.0",
+    "eslint-config-standard-with-typescript": "^21.0.1",
     "eslint-plugin-import": "^2.23.4",
     "eslint-plugin-node": "^11.1.0",
     "eslint-plugin-promise": "^5.1.0",
+    "jest": "^27.5.1",
     "rimraf": "^3.0.2",
     "ts-node": "^10.0.0",
     "ts-node-dev": "^1.1.8",
@@ -30,14 +32,14 @@
   "dependencies": {
     "@tracer-protocol/pools-js": "^2.0.3",
     "dotenv": "^10.0.0",
-    "eslint-config-standard-with-typescript": "^20.0.0",
     "ethers": "5.5.1",
-    "node-fetch": "^2.6.1",
     "tiny-typed-emitter": "^2.1.0"
   },
   "scripts": {
     "tsc": "tsc",
     "build": "rimraf dist && tsc",
-    "lint": "eslint --ext .ts,.js ."
+    "lint": "eslint --ext .ts,.js .",
+    "test": "jest --runInBand",
+    "test:coverage": "jest --runInBand --coverage"
   }
 }

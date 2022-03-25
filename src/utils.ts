@@ -6,21 +6,30 @@ import { BigNumber } from 'bignumber.js';
 export const attemptPromiseRecursively = async <T>({
   promise,
   retryCheck,
-  interval = 1000
+  maxAttempts = 3,
+  interval = 1000,
+  attemptCount = 1
 }: {
-  promise: () => Promise<T>,
-  retryCheck?: () => Promise<boolean>,
+  promise: () => Promise<T>
+  retryCheck?: (error: any) => Promise<boolean>
+  maxAttempts?: number
   interval?: number
+  attemptCount?: number
 }): Promise<T> => {
   try {
-    return await promise();
-  } catch (error) {
+    const result = await promise();
+    return result;
+  } catch (error: any) {
+    if (attemptCount >= maxAttempts) {
+      throw error;
+    }
+
     await new Promise(resolve => setTimeout(resolve, interval));
 
-    if (!retryCheck || (retryCheck && await retryCheck())) {
-      return attemptPromiseRecursively({ promise, retryCheck, interval });
+    if (!retryCheck || (retryCheck && await retryCheck(error))) {
+      return attemptPromiseRecursively({ promise, retryCheck, interval, maxAttempts, attemptCount: attemptCount + 1 });
     } else {
-      return undefined as unknown as T;
+      throw error;
     }
   }
 };
@@ -31,4 +40,8 @@ export const ethersBNtoBN = (ethersBN: ethers.BigNumber): BigNumber => {
 
 export const poolSwapLibraryAddresses: Record<string, string> = {
   421611: '0x8e761005bAFB81CEde15366158B1F769a411dDfc'
+};
+
+export const movingAveragePriceTransformer = (lastPrice: BigNumber, currentPrice: BigNumber) => {
+  return lastPrice.plus(currentPrice).div(2);
 };
