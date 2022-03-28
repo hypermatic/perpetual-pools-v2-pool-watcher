@@ -14,13 +14,13 @@ import {
   LeveragedPool,
   PoolSwapLibrary__factory,
   PoolSwapLibrary
-} from '../../src/typesV2';
+} from '@tracer-protocol/perpetual-pools-contracts/types';
 
 import { PoolWatcher } from '../../src/PoolWatcher';
 import { constructorDefaults } from '../_mockData';
 
 jest.mock('ethers');
-jest.mock('../../src/typesV2'); ;
+jest.mock('@tracer-protocol/perpetual-pools-contracts/types'); ;
 
 const mockedEthers = jest.mocked(ethers, true);
 const mockLeveragedPoolFactory = jest.mocked(LeveragedPool__factory, true);
