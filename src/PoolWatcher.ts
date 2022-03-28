@@ -12,7 +12,7 @@ import {
   PoolKeeper__factory,
   PoolSwapLibrary,
   PoolSwapLibrary__factory
-} from './typesV2';
+} from '@tracer-protocol/perpetual-pools-contracts/types';
 
 import {
   poolSwapLibraryAddresses,

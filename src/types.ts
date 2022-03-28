@@ -6,7 +6,7 @@ import {
   ERC20,
   PoolCommitter,
   PoolKeeper
-} from './typesV2';
+} from '@tracer-protocol/perpetual-pools-contracts/types';
 
 import { EVENT_NAMES } from './constants';
 
