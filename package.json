@@ -1,6 +1,6 @@
 {
   "name": "@tracer-protocol/perpetual-pools-v2-pool-watcher",
-  "version": "0.0.4",
+  "version": "0.0.5",
   "description": "tracer perpetual pool watcher that can act as a building block for various types of bots",
   "main": "index.js",
   "typings": "index.d.ts",
