@@ -2,7 +2,7 @@ import BigNumber from 'bignumber.js';
 import { ethers } from 'ethers';
 import { jest } from '@jest/globals';
 
-import type { LeveragedPool, PoolCommitter, PoolSwapLibrary } from '../../src/typesV2';
+import type { LeveragedPool, PoolCommitter, PoolSwapLibrary } from '@tracer-protocol/perpetual-pools-contracts/types';
 import { PoolWatcher } from '../../src/PoolWatcher';
 import { PoolWatcherConstructorArgs, TotalPoolCommitmentsBN } from '../../src/types';
 

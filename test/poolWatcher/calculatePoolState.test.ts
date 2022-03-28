@@ -16,7 +16,7 @@ import {
   LeveragedPool__factory,
   PoolSwapLibrary__factory,
   PoolCommitter__factory
-} from '../../src/typesV2';
+} from '@tracer-protocol/perpetual-pools-contracts/types';
 
 import {
   constructorDefaults,
@@ -31,7 +31,7 @@ import type { ethers } from 'ethers';
 const actualEthers = jest.requireActual('ethers') as typeof ethers;
 
 jest.mock('ethers');
-jest.mock('../../src/typesV2'); ;
+jest.mock('@tracer-protocol/perpetual-pools-contracts/types'); ;
 
 const mockLeveragedPoolFactory = jest.mocked(LeveragedPool__factory, true);
 const mockPoolSwapLibraryFactory = jest.mocked(PoolSwapLibrary__factory, true);
