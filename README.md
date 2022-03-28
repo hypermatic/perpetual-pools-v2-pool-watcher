@@ -149,8 +149,8 @@ This event is emitted at the same time at `UPKEEP`, but includes the `updateInte
 The following data will be passed into the callback of subscribed event listeners:
 | Name                   | Type        | Description                                                                                                     |
 |------------------------|-------------|-----------------------------------------------------------------------------------------------------------------|
-| updateIntervalId       | number      | address of account that created the commit                                                                      |
-| mintingFee             | string      | burning fee percentage at time of upkeep, 128 bit (quad precision) floating point encoded                       |
+| updateIntervalId       | number      | interval id that was processed                                                                                  |
+| burningFee             | string      | burning fee percentage at time of upkeep, 128 bit (quad precision) floating point encoded                       |
 | timestamp              | number      | unix timestamp of block where event was emitted                                                                 |
 | blockNumber            | number      | block number in which event was emitted                                                                         |
 | txHash                 | string      | hash of transaction in which event was emitted                                                                  |
