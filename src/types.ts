@@ -110,7 +110,7 @@ export type ExpectedPoolState = {
   pendingCommits: TotalPoolCommitmentsBN[]
 }
 
-export interface PoolWatcherEvents  {
+export interface PoolWatcherEvents {
   [EVENT_NAMES.COMMIT]: (data: CommitEventData) => void;
   [EVENT_NAMES.UPKEEP]: (data: UpkeepEventData) => void;
   [EVENT_NAMES.COMMITMENT_WINDOW_ENDED]: () => void;

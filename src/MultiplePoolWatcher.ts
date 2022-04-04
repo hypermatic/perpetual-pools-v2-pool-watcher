@@ -54,7 +54,7 @@ export class MultiplePoolWatcher extends TypedEmitter<MultiplePoolWatcherEvents>
 
       poolWatcher.on('COMMITS_EXECUTED', data => {
         this.emit(EVENT_NAMES.COMMITS_EXECUTED, { ...data, poolAddress }); // forwards event
-      })
+      });
     }));
   }
 }
