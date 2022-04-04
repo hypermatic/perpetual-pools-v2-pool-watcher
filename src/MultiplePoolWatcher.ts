@@ -1,27 +1,18 @@
 import { TypedEmitter } from 'tiny-typed-emitter';
 
 import {
-  ExpectedPoolState,
-  CommitEventData,
-  UpkeepEventData,
   MultiplePoolWatcherConstructorArgs,
-  SpecificPool
+  MultiplePoolWatcherEvents
 } from './types';
 import { PoolWatcher } from './PoolWatcher';
 import { EVENT_NAMES } from './constants';
-
-interface MultiplePoolWatcherEvents {
-  [EVENT_NAMES.COMMIT]: (data: CommitEventData & SpecificPool) => void;
-  [EVENT_NAMES.UPKEEP]: (data: UpkeepEventData & SpecificPool) => void;
-  [EVENT_NAMES.COMMITMENT_WINDOW_ENDED]: (data: SpecificPool) => void;
-  [EVENT_NAMES.COMMITMENT_WINDOW_ENDING]: (state: ExpectedPoolState & SpecificPool) => void;
-}
 
 export class MultiplePoolWatcher extends TypedEmitter<MultiplePoolWatcherEvents> {
   nodeUrl: string;
   poolAddresses: string[]
   chainId: string
   commitmentWindowBuffer: number
+  ignoreEvents: { [eventName: string]: boolean } | undefined
 
   constructor (args: MultiplePoolWatcherConstructorArgs) {
     super();
@@ -29,6 +20,7 @@ export class MultiplePoolWatcher extends TypedEmitter<MultiplePoolWatcherEvents>
     this.poolAddresses = args.poolAddresses;
     this.chainId = args.chainId;
     this.commitmentWindowBuffer = args.commitmentWindowBuffer;
+    this.ignoreEvents = args.ignoreEvents;
   }
 
   async initializePoolWatchers () {
@@ -37,7 +29,8 @@ export class MultiplePoolWatcher extends TypedEmitter<MultiplePoolWatcherEvents>
         nodeUrl: this.nodeUrl,
         commitmentWindowBuffer: this.commitmentWindowBuffer, // calculate pool state 10 seconds before
         chainId: this.chainId,
-        poolAddress
+        poolAddress,
+        ignoreEvents: this.ignoreEvents
       });
 
       await poolWatcher.initializeWatchedPool();
@@ -57,6 +50,10 @@ export class MultiplePoolWatcher extends TypedEmitter<MultiplePoolWatcherEvents>
 
       poolWatcher.on('UPKEEP', data => {
         this.emit(EVENT_NAMES.UPKEEP, { ...data, poolAddress }); // forwards event
+      });
+
+      poolWatcher.on('COMMITS_EXECUTED', data => {
+        this.emit(EVENT_NAMES.COMMITS_EXECUTED, { ...data, poolAddress }); // forwards event
       });
     }));
   }

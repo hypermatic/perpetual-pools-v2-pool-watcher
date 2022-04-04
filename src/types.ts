@@ -118,6 +118,14 @@ export interface PoolWatcherEvents {
   [EVENT_NAMES.COMMITS_EXECUTED]: (data: CommitsExecutedData) => void;
 }
 
+export interface MultiplePoolWatcherEvents {
+  [EVENT_NAMES.COMMIT]: (data: CommitEventData & SpecificPool) => void;
+  [EVENT_NAMES.UPKEEP]: (data: UpkeepEventData & SpecificPool) => void;
+  [EVENT_NAMES.COMMITMENT_WINDOW_ENDED]: (data: SpecificPool) => void;
+  [EVENT_NAMES.COMMITMENT_WINDOW_ENDING]: (state: ExpectedPoolState & SpecificPool) => void;
+  [EVENT_NAMES.COMMITS_EXECUTED]: (data: CommitsExecutedData & SpecificPool) => void;
+}
+
 export type TotalPoolCommitments = [
   ethers.BigNumber,
   ethers.BigNumber,
