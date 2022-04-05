@@ -344,7 +344,8 @@ export class PoolWatcher extends TypedEmitter<PoolWatcherEvents> {
 
     const upkeepSuccessfulFilter = this.watchedPool.keeperInstance.filters.UpkeepSuccessful(this.poolAddress);
 
-    if (!this.ignoreEvents[EVENT_NAMES.COMMITMENT_WINDOW_ENDING]) {
+    if (!this.ignoreEvents[EVENT_NAMES.COMMITMENT_WINDOW_ENDING] || !this.ignoreEvents[EVENT_NAMES.COMMITMENT_WINDOW_ENDED]) {
+      const [emitWindowEnding, emitWindowEnded] = [!this.ignoreEvents[EVENT_NAMES.COMMITMENT_WINDOW_ENDING], !this.ignoreEvents[EVENT_NAMES.COMMITMENT_WINDOW_ENDED]];
       const scheduleStateCalculation = async () => {
         const [
           lastPriceTimestampEthersBN,
@@ -371,6 +372,17 @@ export class PoolWatcher extends TypedEmitter<PoolWatcherEvents> {
         // if we are already past the start of the acceptable commitment window end
         // do nothing and wait until next upkeep to schedule anything
         if (nowSeconds > waitUntil) {
+          if (emitWindowEnded) {
+            if (nowSeconds > commitmentWindowEnd) {
+              // if we are already ended
+              this.emit(EVENT_NAMES.COMMITMENT_WINDOW_ENDED);
+            } else {
+              // time is between buffer and commitmentWindowEnd
+              setTimeout(() => {
+                this.emit(EVENT_NAMES.COMMITMENT_WINDOW_ENDED);
+              }, (nowSeconds - commitmentWindowEnd) * 1000);
+            }
+          }
           this.watchedPool.keeperInstance.once(upkeepSuccessfulFilter, () => {
             scheduleStateCalculation();
           });
@@ -378,24 +390,33 @@ export class PoolWatcher extends TypedEmitter<PoolWatcherEvents> {
         // set time out for waitUntil - nowSeconds
         // wake up and check if we are still inside of the same commitment window
           setTimeout(async () => {
-            const updateIntervalBeforeStateCalc = await this.isCommitmentWindowStillOpen(
-              appropriateIntervalIdBefore.toNumber()
-            );
+            if (emitWindowEnded) {
+              // wait the buffer time and fire an ended event
+              setTimeout(() => {
+                this.emit(EVENT_NAMES.COMMITMENT_WINDOW_ENDED);
+              }, this.commitmentWindowBuffer * 1000);
+            }
 
-            // if the appropriate update interval id is still the same as before we slept,
-            // we are still within the acceptable commitment window
-            if (updateIntervalBeforeStateCalc) {
-              const expectedStateInputs = await this.getExpectedStateInputs();
+            if (emitWindowEnding) {
+              const updateIntervalBeforeStateCalc = await this.isCommitmentWindowStillOpen(
+                appropriateIntervalIdBefore.toNumber()
+              );
 
-              const expectedState = this.calculatePoolState(expectedStateInputs);
+              // if the appropriate update interval id is still the same as before we slept,
+              // we are still within the acceptable commitment window
+              if (updateIntervalBeforeStateCalc) {
+                const expectedStateInputs = await this.getExpectedStateInputs();
 
-              // do one last check to make sure commitment window has not ended
-              const updateIntervalIdAfterStateCalc = await attemptPromiseRecursively({
-                promise: () => this.watchedPool.committerInstance.getAppropriateUpdateIntervalId()
-              });
+                const expectedState = this.calculatePoolState(expectedStateInputs);
 
-              if (appropriateIntervalIdBefore.eq(updateIntervalIdAfterStateCalc)) {
-                this.emit(EVENT_NAMES.COMMITMENT_WINDOW_ENDING, expectedState);
+                // do one last check to make sure commitment window has not ended
+                const updateIntervalIdAfterStateCalc = await attemptPromiseRecursively({
+                  promise: () => this.watchedPool.committerInstance.getAppropriateUpdateIntervalId()
+                });
+
+                if (appropriateIntervalIdBefore.eq(updateIntervalIdAfterStateCalc)) {
+                  this.emit(EVENT_NAMES.COMMITMENT_WINDOW_ENDING, expectedState);
+                }
               }
             }
 

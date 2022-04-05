@@ -36,23 +36,23 @@ export class MultiplePoolWatcher extends TypedEmitter<MultiplePoolWatcherEvents>
       await poolWatcher.initializeWatchedPool();
       poolWatcher.startWatchingPool();
 
-      poolWatcher.on('COMMITMENT_WINDOW_ENDING', state => {
+      poolWatcher.on(EVENT_NAMES.COMMITMENT_WINDOW_ENDING, state => {
         this.emit(EVENT_NAMES.COMMITMENT_WINDOW_ENDING, { ...state, poolAddress }); // forwards event
       });
 
-      poolWatcher.on('COMMITMENT_WINDOW_ENDED', () => {
+      poolWatcher.on(EVENT_NAMES.COMMITMENT_WINDOW_ENDED, () => {
         this.emit(EVENT_NAMES.COMMITMENT_WINDOW_ENDED, { poolAddress }); // forwards event
       });
 
-      poolWatcher.on('COMMIT', commitData => {
+      poolWatcher.on(EVENT_NAMES.COMMIT, commitData => {
         this.emit(EVENT_NAMES.COMMIT, { ...commitData, poolAddress }); // forwards event
       });
 
-      poolWatcher.on('UPKEEP', data => {
+      poolWatcher.on(EVENT_NAMES.UPKEEP, data => {
         this.emit(EVENT_NAMES.UPKEEP, { ...data, poolAddress }); // forwards event
       });
 
-      poolWatcher.on('COMMITS_EXECUTED', data => {
+      poolWatcher.on(EVENT_NAMES.COMMITS_EXECUTED, data => {
         this.emit(EVENT_NAMES.COMMITS_EXECUTED, { ...data, poolAddress }); // forwards event
       });
     }));
