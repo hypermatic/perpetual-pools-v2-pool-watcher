@@ -76,9 +76,13 @@ describe('PoolWatcher calculatePoolState', () => {
     } = poolWatcher.calculatePoolState(expectedStateInputDefaults);
 
     expect(currentLongBalance).toEqual(expectedStateInputDefaults.longBalance);
-    expect(currentLongSupply).toEqual(expectedStateInputDefaults.longTokenSupply);
+    expect(currentLongSupply).toEqual(
+      expectedStateInputDefaults.longTokenSupply.plus(expectedStateInputDefaults.pendingLongTokenBurn)
+    );
     expect(currentShortBalance).toEqual(expectedStateInputDefaults.shortBalance);
-    expect(currentShortSupply).toEqual(expectedStateInputDefaults.shortTokenSupply);
+    expect(currentShortSupply).toEqual(
+      expectedStateInputDefaults.shortTokenSupply.plus(expectedStateInputDefaults.pendingShortTokenBurn)
+    );
     expect(currentSkew).toEqual(currentLongBalance.div(currentShortBalance));
     expect(totalNetPendingLong).toEqual(new BigNumber(0));
     expect(totalNetPendingShort).toEqual(new BigNumber(0));
@@ -305,9 +309,13 @@ describe('PoolWatcher calculatePoolState', () => {
     const interval3FinalLongSupply = interval2FinalLongSupply.plus(interval3LongSupplyChange);
 
     expect(currentLongBalance).toEqual(calculateStateInputs.longBalance);
-    expect(currentLongSupply).toEqual(calculateStateInputs.longTokenSupply);
+    expect(currentLongSupply).toEqual(
+      calculateStateInputs.longTokenSupply.plus(calculateStateInputs.pendingLongTokenBurn)
+    );
     expect(currentShortBalance).toEqual(calculateStateInputs.shortBalance);
-    expect(currentShortSupply).toEqual(calculateStateInputs.shortTokenSupply);
+    expect(currentShortSupply).toEqual(
+      calculateStateInputs.shortTokenSupply.plus(calculateStateInputs.pendingShortTokenBurn)
+    );
     expect(currentSkew).toEqual(currentLongBalance.div(currentShortBalance));
 
     expect(expectedShortBalance).toEqual(interval3FinalShortBalance);
@@ -371,6 +379,9 @@ describe('PoolWatcher calculatePoolState', () => {
       shortBalance: interval1Result.expectedShortBalance,
       longTokenSupply: interval1Result.expectedLongSupply,
       shortTokenSupply: interval1Result.expectedShortSupply,
+      // these get added to starting balance so are already accounted for in interval 1
+      pendingLongTokenBurn: new BigNumber(0),
+      pendingShortTokenBurn: new BigNumber(0),
       lastOraclePrice: interval1Result.expectedOraclePrice,
       pendingCommits: [mockPendingCommits[1]]
     });
@@ -381,6 +392,9 @@ describe('PoolWatcher calculatePoolState', () => {
       shortBalance: interval2Result.expectedShortBalance,
       longTokenSupply: interval2Result.expectedLongSupply,
       shortTokenSupply: interval2Result.expectedShortSupply,
+      // these get added to starting balance so are already accounted for in interval 1
+      pendingLongTokenBurn: new BigNumber(0),
+      pendingShortTokenBurn: new BigNumber(0),
       lastOraclePrice: interval2Result.expectedOraclePrice,
       pendingCommits: [mockPendingCommits[2]]
     });
@@ -428,9 +442,13 @@ describe('PoolWatcher calculatePoolState', () => {
     } = poolWatcher.calculatePoolState(calculateStateInputs);
 
     expect(currentLongBalance).toEqual(expectedStateInputDefaults.longBalance);
-    expect(currentLongSupply).toEqual(expectedStateInputDefaults.longTokenSupply);
+    expect(currentLongSupply).toEqual(
+      expectedStateInputDefaults.longTokenSupply.plus(expectedStateInputDefaults.pendingLongTokenBurn)
+    );
     expect(currentShortBalance).toEqual(expectedStateInputDefaults.shortBalance);
-    expect(currentShortSupply).toEqual(expectedStateInputDefaults.shortTokenSupply);
+    expect(currentShortSupply).toEqual(
+      expectedStateInputDefaults.shortTokenSupply.plus(expectedStateInputDefaults.pendingShortTokenBurn)
+    );
     expect(currentSkew).toEqual(currentLongBalance.div(currentShortBalance));
     expect(totalNetPendingLong).toEqual(new BigNumber(0));
     expect(totalNetPendingShort).toEqual(new BigNumber(0));
