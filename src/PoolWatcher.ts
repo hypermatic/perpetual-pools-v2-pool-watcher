@@ -195,7 +195,9 @@ export class PoolWatcher extends TypedEmitter<PoolWatcherEvents> {
       lastOraclePrice,
       pendingCommits,
       longTokenSupply,
-      shortTokenSupply
+      shortTokenSupply,
+      pendingLongTokenBurn,
+      pendingShortTokenBurn
     ] = await Promise.all([
       attemptPromiseRecursively({ promise: () => this.poolInstance.longBalance() }),
       attemptPromiseRecursively({ promise: () => this.poolInstance.shortBalance() }),
@@ -203,7 +205,9 @@ export class PoolWatcher extends TypedEmitter<PoolWatcherEvents> {
       attemptPromiseRecursively({ promise: () => keeperInstance.executionPrice(this.poolAddress) }),
       attemptPromiseRecursively({ promise: () => this.getRelevantPendingCommits() }),
       attemptPromiseRecursively({ promise: () => longTokenInstance.totalSupply() }),
-      attemptPromiseRecursively({ promise: () => shortTokenInstance.totalSupply() })
+      attemptPromiseRecursively({ promise: () => shortTokenInstance.totalSupply() }),
+      attemptPromiseRecursively({ promise: () => this.watchedPool.committerInstance.pendingLongBurnPoolTokens() }),
+      attemptPromiseRecursively({ promise: () => this.watchedPool.committerInstance.pendingShortBurnPoolTokens() })
     ]);
 
     return {
@@ -214,7 +218,9 @@ export class PoolWatcher extends TypedEmitter<PoolWatcherEvents> {
       currentOraclePrice: ethersBNtoBN(currentOraclePrice),
       pendingCommits,
       longTokenSupply: ethersBNtoBN(longTokenSupply),
-      shortTokenSupply: ethersBNtoBN(shortTokenSupply)
+      shortTokenSupply: ethersBNtoBN(shortTokenSupply),
+      pendingLongTokenBurn: ethersBNtoBN(pendingLongTokenBurn),
+      pendingShortTokenBurn: ethersBNtoBN(pendingShortTokenBurn)
     };
   }
 
@@ -229,15 +235,20 @@ export class PoolWatcher extends TypedEmitter<PoolWatcherEvents> {
       shortBalance,
       longTokenSupply,
       shortTokenSupply,
+      pendingLongTokenBurn,
+      pendingShortTokenBurn,
       lastOraclePrice,
       currentOraclePrice,
       pendingCommits
     } = inputs;
 
-    let expectedLongBalance = new BigNumber(longBalance.toString());
-    let expectedShortBalance = new BigNumber(shortBalance.toString());
-    let expectedLongSupply = new BigNumber(longTokenSupply.toString());
-    let expectedShortSupply = new BigNumber(shortTokenSupply.toString());
+    let expectedLongBalance = longBalance;
+    let expectedShortBalance = shortBalance;
+    // tokens are burned on commit, so they are reflected in token supply immediately
+    // add the pending burns to the starting supplies
+    // as pending commits are executed, the running supply will be reduced based on burns
+    let expectedLongSupply = longTokenSupply.plus(pendingLongTokenBurn);
+    let expectedShortSupply = shortTokenSupply.plus(pendingShortTokenBurn);
     let totalNetPendingLong = new BigNumber(0);
     let totalNetPendingShort = new BigNumber(0);
     let expectedLongTokenPrice = expectedLongBalance.div(expectedLongSupply);
@@ -313,9 +324,9 @@ export class PoolWatcher extends TypedEmitter<PoolWatcherEvents> {
       timestamp: Math.floor(Date.now() / 1000),
       currentSkew: longBalance.eq(0) || shortBalance.eq(0) ? new BigNumber(1) : longBalance.div(shortBalance),
       currentLongBalance: longBalance,
-      currentLongSupply: longTokenSupply,
+      currentLongSupply: longTokenSupply.plus(pendingLongTokenBurn),
       currentShortBalance: shortBalance,
-      currentShortSupply: shortTokenSupply,
+      currentShortSupply: shortTokenSupply.plus(pendingShortTokenBurn),
       expectedSkew,
       expectedLongBalance,
       expectedLongSupply,
@@ -398,23 +409,23 @@ export class PoolWatcher extends TypedEmitter<PoolWatcherEvents> {
             }
 
             if (emitWindowEnding) {
-              const updateIntervalBeforeStateCalc = await this.isCommitmentWindowStillOpen(
+              const windowIsOpenBeforeStateCalc = await this.isCommitmentWindowStillOpen(
                 appropriateIntervalIdBefore.toNumber()
               );
 
               // if the appropriate update interval id is still the same as before we slept,
               // we are still within the acceptable commitment window
-              if (updateIntervalBeforeStateCalc) {
+              if (windowIsOpenBeforeStateCalc) {
                 const expectedStateInputs = await this.getExpectedStateInputs();
 
                 const expectedState = this.calculatePoolState(expectedStateInputs);
 
                 // do one last check to make sure commitment window has not ended
-                const updateIntervalIdAfterStateCalc = await attemptPromiseRecursively({
+                const windowIsOpenAfterStateCalc = await attemptPromiseRecursively({
                   promise: () => this.watchedPool.committerInstance.getAppropriateUpdateIntervalId()
                 });
 
-                if (appropriateIntervalIdBefore.eq(updateIntervalIdAfterStateCalc)) {
+                if (windowIsOpenAfterStateCalc) {
                   this.emit(EVENT_NAMES.COMMITMENT_WINDOW_ENDING, expectedState);
                 }
               }

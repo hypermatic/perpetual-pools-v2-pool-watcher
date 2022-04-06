@@ -150,6 +150,8 @@ export type ExpectedPoolStateInputs = {
   shortBalance: BigNumber,
   longTokenSupply: BigNumber,
   shortTokenSupply: BigNumber,
+  pendingLongTokenBurn: BigNumber,
+  pendingShortTokenBurn: BigNumber,
   lastOraclePrice: BigNumber,
   currentOraclePrice: BigNumber,
   pendingCommits: Array<TotalPoolCommitmentsBN>

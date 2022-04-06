@@ -35,8 +35,10 @@ export const expectedStateInputDefaults = {
   leverage: 3,
   longBalance: new BigNumber('120000000000000000000000'),
   shortBalance: new BigNumber('100000000000000000000000'),
-  longTokenSupply: new BigNumber('100000000000000000000000'),
-  shortTokenSupply: new BigNumber('100000000000000000000000'),
+  longTokenSupply: new BigNumber('90000000000000000000000'),
+  shortTokenSupply: new BigNumber('80000000000000000000000'),
+  pendingLongTokenBurn: new BigNumber('1000000000000000000000'),
+  pendingShortTokenBurn: new BigNumber('2000000000000000000000'),
   lastOraclePrice: new BigNumber('100000000000000000000000'),
   currentOraclePrice: new BigNumber('110000000000000000000000'),
   pendingCommits: [
