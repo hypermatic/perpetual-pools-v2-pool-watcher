@@ -426,7 +426,10 @@ export class PoolWatcher extends TypedEmitter<PoolWatcherEvents> {
                 });
 
                 if (windowIsOpenAfterStateCalc) {
-                  this.emit(EVENT_NAMES.COMMITMENT_WINDOW_ENDING, expectedState);
+                  this.emit(EVENT_NAMES.COMMITMENT_WINDOW_ENDING, {
+                    ...expectedState,
+                    updateIntervalId: ethersBNtoBN(appropriateIntervalIdBefore)
+                  });
                 }
               }
             }

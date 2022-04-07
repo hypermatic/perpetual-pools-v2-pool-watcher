@@ -108,6 +108,7 @@ The following data containing the expected pool state will be passed into the ca
 | lastOraclePrice             | `BigNumber` | last reported oracle price                                                            |
 | expectedOraclePrice         | `BigNumber` | expected oracle price after applying oraclePriceTransformer for each expected interval|
 | pendingCommits              | `TotalPoolCommitmentsBN[]`| pending commits for each expected upcoming update interval              |
+| updateIntervalId            | `BigNumber` | id of update interval that is ending                                                  |
 
 ## UPKEEP
 
