@@ -1,7 +1,6 @@
 import { TypedEmitter } from 'tiny-typed-emitter';
 import { ethers } from 'ethers';
 import BigNumber from 'bignumber.js';
-import { calcNextValueTransfer } from '@tracer-protocol/pools-js';
 
 // TODO: update to latest version after redeploy/abis are provided via sdk or other package
 import {
@@ -24,13 +23,17 @@ import {
 import {
   PoolWatcherConstructorArgs,
   WatchedPool,
-  ExpectedPoolState,
-  TotalPoolCommitments,
-  TotalPoolCommitmentsBN,
   RawCommitType,
-  ExpectedPoolStateInputs,
   PoolWatcherEvents
 } from './types';
+
+import {
+  TotalPoolCommitments,
+  TotalPoolCommitmentsBN
+} from '@tracer-protocol/pools-js/types';
+
+import { calcPoolStatePreview, PoolStatePreviewInputs } from '@tracer-protocol/pools-js';
+
 import { EVENT_NAMES } from './constants';
 
 export class PoolWatcher extends TypedEmitter<PoolWatcherEvents> {
@@ -113,7 +116,7 @@ export class PoolWatcher extends TypedEmitter<PoolWatcherEvents> {
   }
 
   /**
-   *
+   * gets pending commits for all update intervals between now and now + frontRunningInterval
    * @returns
    */
   async getRelevantPendingCommits (): Promise<TotalPoolCommitmentsBN[]> {
@@ -181,7 +184,7 @@ export class PoolWatcher extends TypedEmitter<PoolWatcherEvents> {
     return appropriateUpdateIntervalId.eq(updateIntervalId);
   }
 
-  async getExpectedStateInputs (): Promise<ExpectedPoolStateInputs> {
+  async getPoolStatePreviewInputs (): Promise<PoolStatePreviewInputs> {
     if (!this.watchedPool.address) {
       throw new Error('getExpectedStateInput: watched pool not initialised');
     }
@@ -220,125 +223,8 @@ export class PoolWatcher extends TypedEmitter<PoolWatcherEvents> {
       longTokenSupply: ethersBNtoBN(longTokenSupply),
       shortTokenSupply: ethersBNtoBN(shortTokenSupply),
       pendingLongTokenBurn: ethersBNtoBN(pendingLongTokenBurn),
-      pendingShortTokenBurn: ethersBNtoBN(pendingShortTokenBurn)
-    };
-  }
-
-  calculatePoolState (inputs: ExpectedPoolStateInputs): ExpectedPoolState {
-    if (!this.watchedPool.address) {
-      throw new Error('calculatePoolState: watched pool not initialised');
-    }
-
-    const {
-      leverage,
-      longBalance,
-      shortBalance,
-      longTokenSupply,
-      shortTokenSupply,
-      pendingLongTokenBurn,
-      pendingShortTokenBurn,
-      lastOraclePrice,
-      currentOraclePrice,
-      pendingCommits
-    } = inputs;
-
-    let expectedLongBalance = longBalance;
-    let expectedShortBalance = shortBalance;
-    // tokens are burned on commit, so they are reflected in token supply immediately
-    // add the pending burns to the starting supplies
-    // as pending commits are executed, the running supply will be reduced based on burns
-    let expectedLongSupply = longTokenSupply.plus(pendingLongTokenBurn);
-    let expectedShortSupply = shortTokenSupply.plus(pendingShortTokenBurn);
-    let totalNetPendingLong = new BigNumber(0);
-    let totalNetPendingShort = new BigNumber(0);
-    let expectedLongTokenPrice = expectedLongBalance.div(expectedLongSupply);
-    let expectedShortTokenPrice = expectedShortBalance.div(expectedShortSupply);
-
-    let movingOraclePriceBefore = lastOraclePrice;
-    let movingOraclePriceAfter = lastOraclePrice;
-
-    for (const pendingCommit of pendingCommits) {
-      const {
-        longBurnPoolTokens,
-        longBurnShortMintPoolTokens,
-        longMintSettlement,
-        shortBurnPoolTokens,
-        shortBurnLongMintPoolTokens,
-        shortMintSettlement
-      } = pendingCommit;
-
-      // apply price transformations to emulate underlying oracle wrapper implementation
-      movingOraclePriceBefore = movingOraclePriceAfter;
-      movingOraclePriceAfter = this.oraclePriceTransformer(movingOraclePriceBefore, currentOraclePrice);
-
-      const { longValueTransfer, shortValueTransfer } = calcNextValueTransfer(
-        movingOraclePriceBefore,
-        movingOraclePriceAfter,
-        new BigNumber(leverage),
-        expectedLongBalance,
-        expectedShortBalance
-      );
-
-      // balances immediately before commits executed
-      expectedLongBalance = expectedLongBalance.plus(longValueTransfer);
-      expectedShortBalance = expectedShortBalance.plus(shortValueTransfer);
-
-      const totalLongBurn = longBurnPoolTokens.plus(longBurnShortMintPoolTokens);
-      const totalShortBurn = shortBurnPoolTokens.plus(shortBurnLongMintPoolTokens);
-
-      // current balance + expected value transfer / expected supply
-      // if either side has no token supply, any amount no matter how small will buy the whole side
-      const longTokenPriceDenominator = expectedLongSupply.plus(totalLongBurn);
-
-      expectedLongTokenPrice = longTokenPriceDenominator.lte(0)
-        ? expectedLongBalance
-        : expectedLongBalance.div(longTokenPriceDenominator);
-
-      const shortTokenPriceDenominator = expectedShortSupply.plus(totalShortBurn);
-
-      expectedShortTokenPrice = shortTokenPriceDenominator.lte(0)
-        ? expectedShortBalance
-        : expectedShortBalance.div(shortTokenPriceDenominator);
-
-      const totalLongMint = longMintSettlement.plus(shortBurnLongMintPoolTokens.times(expectedShortTokenPrice));
-      const totalShortMint = shortMintSettlement.plus(longBurnShortMintPoolTokens.times(expectedLongTokenPrice));
-
-      const netPendingLongBalance = totalLongMint.minus(totalLongBurn.times(expectedLongTokenPrice));
-      const netPendingShortBalance = totalShortMint.minus(totalShortBurn.times(expectedShortTokenPrice));
-
-      totalNetPendingLong = totalNetPendingLong.plus(netPendingLongBalance);
-      totalNetPendingShort = totalNetPendingShort.plus(netPendingShortBalance);
-
-      expectedLongBalance = expectedLongBalance.plus(netPendingLongBalance);
-      expectedShortBalance = expectedShortBalance.plus(netPendingShortBalance);
-
-      expectedLongSupply = expectedLongSupply.minus(totalLongBurn).plus(totalLongMint.div(expectedLongTokenPrice));
-      expectedShortSupply = expectedShortSupply.minus(totalShortBurn).plus(totalShortMint.div(expectedShortTokenPrice));
-    }
-
-    const expectedSkew = expectedShortBalance.eq(0) || expectedLongBalance.eq(0)
-      ? new BigNumber(1)
-      : expectedLongBalance.div(expectedShortBalance);
-
-    return {
-      timestamp: Math.floor(Date.now() / 1000),
-      currentSkew: longBalance.eq(0) || shortBalance.eq(0) ? new BigNumber(1) : longBalance.div(shortBalance),
-      currentLongBalance: longBalance,
-      currentLongSupply: longTokenSupply.plus(pendingLongTokenBurn),
-      currentShortBalance: shortBalance,
-      currentShortSupply: shortTokenSupply.plus(pendingShortTokenBurn),
-      expectedSkew,
-      expectedLongBalance,
-      expectedLongSupply,
-      expectedShortBalance,
-      expectedShortSupply,
-      totalNetPendingLong,
-      totalNetPendingShort,
-      expectedLongTokenPrice,
-      expectedShortTokenPrice,
-      lastOraclePrice: lastOraclePrice,
-      expectedOraclePrice: movingOraclePriceAfter,
-      pendingCommits
+      pendingShortTokenBurn: ethersBNtoBN(pendingShortTokenBurn),
+      oraclePriceTransformer: this.oraclePriceTransformer
     };
   }
 
@@ -416,9 +302,9 @@ export class PoolWatcher extends TypedEmitter<PoolWatcherEvents> {
               // if the appropriate update interval id is still the same as before we slept,
               // we are still within the acceptable commitment window
               if (windowIsOpenBeforeStateCalc) {
-                const expectedStateInputs = await this.getExpectedStateInputs();
+                const poolStatePreviewInputs = await this.getPoolStatePreviewInputs();
 
-                const expectedState = this.calculatePoolState(expectedStateInputs);
+                const expectedState = calcPoolStatePreview(poolStatePreviewInputs);
 
                 // do one last check to make sure commitment window has not ended
                 const windowIsOpenAfterStateCalc = await attemptPromiseRecursively({

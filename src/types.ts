@@ -1,4 +1,4 @@
-import { ethers } from 'ethers';
+import { TotalPoolCommitmentsBN } from '@tracer-protocol/pools-js/types';
 import BigNumber from 'bignumber.js';
 
 // TODO: update to latest version after redeploy/abis are provided via sdk or other package
@@ -79,16 +79,6 @@ export type WatchedPool = {
   hasCalculatedStateThisUpdate: boolean,
 }
 
-export type TotalPoolCommitmentsBN = {
-  longMintSettlement: BigNumber;
-  longBurnPoolTokens: BigNumber;
-  shortMintSettlement: BigNumber;
-  shortBurnPoolTokens: BigNumber;
-  shortBurnLongMintPoolTokens: BigNumber;
-  longBurnShortMintPoolTokens: BigNumber;
-  updateIntervalId: BigNumber;
-}
-
 export type ExpectedPoolState = {
   timestamp: number,
   currentSkew: BigNumber,
@@ -128,35 +118,4 @@ export interface MultiplePoolWatcherEvents {
   [EVENT_NAMES.COMMITMENT_WINDOW_ENDED]: (data: SpecificPool) => void;
   [EVENT_NAMES.COMMITMENT_WINDOW_ENDING]: (state: ExpectedPoolStateWithUpdateIntervalId & SpecificPool) => void;
   [EVENT_NAMES.COMMITS_EXECUTED]: (data: CommitsExecutedData & SpecificPool) => void;
-}
-
-export type TotalPoolCommitments = [
-  ethers.BigNumber,
-  ethers.BigNumber,
-  ethers.BigNumber,
-  ethers.BigNumber,
-  ethers.BigNumber,
-  ethers.BigNumber,
-  ethers.BigNumber
-] & {
-  longMintSettlement: ethers.BigNumber;
-  longBurnPoolTokens: ethers.BigNumber;
-  shortMintSettlement: ethers.BigNumber;
-  shortBurnPoolTokens: ethers.BigNumber;
-  shortBurnLongMintPoolTokens: ethers.BigNumber;
-  longBurnShortMintPoolTokens: ethers.BigNumber;
-  updateIntervalId: ethers.BigNumber;
-}
-
-export type ExpectedPoolStateInputs = {
-  leverage: number,
-  longBalance: BigNumber,
-  shortBalance: BigNumber,
-  longTokenSupply: BigNumber,
-  shortTokenSupply: BigNumber,
-  pendingLongTokenBurn: BigNumber,
-  pendingShortTokenBurn: BigNumber,
-  lastOraclePrice: BigNumber,
-  currentOraclePrice: BigNumber,
-  pendingCommits: Array<TotalPoolCommitmentsBN>
 }
