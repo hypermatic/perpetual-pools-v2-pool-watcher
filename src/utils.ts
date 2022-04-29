@@ -1,4 +1,3 @@
-import { ethers } from 'ethers';
 import { BigNumber } from 'bignumber.js';
 
 // a util function to attempt a promise recursively until it resolves

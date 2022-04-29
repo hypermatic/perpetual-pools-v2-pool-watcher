@@ -1,7 +1,12 @@
 import { TypedEmitter } from 'tiny-typed-emitter';
 import { ethers } from 'ethers';
 import BigNumber from 'bignumber.js';
-import { pendingCommitsToBN, calcPoolStatePreview, PoolStatePreviewInputs, ethersBNtoBN } from '@tracer-protocol/pools-js';
+import {
+  pendingCommitsToBN,
+  calcPoolStatePreview,
+  PoolStatePreviewInputs,
+  ethersBNtoBN
+} from '@tracer-protocol/pools-js';
 
 // TODO: update to latest version after redeploy/abis are provided via sdk or other package
 import {
