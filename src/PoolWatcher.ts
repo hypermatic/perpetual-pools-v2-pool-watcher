@@ -1,6 +1,7 @@
 import { TypedEmitter } from 'tiny-typed-emitter';
 import { ethers } from 'ethers';
 import BigNumber from 'bignumber.js';
+import { pendingCommitsToBN, calcPoolStatePreview, PoolStatePreviewInputs, ethersBNtoBN } from '@tracer-protocol/pools-js';
 
 // TODO: update to latest version after redeploy/abis are provided via sdk or other package
 import {
@@ -16,7 +17,6 @@ import {
 import {
   poolSwapLibraryAddresses,
   attemptPromiseRecursively,
-  ethersBNtoBN,
   movingAveragePriceTransformer
 } from './utils';
 
@@ -28,11 +28,8 @@ import {
 } from './types';
 
 import {
-  TotalPoolCommitments,
   TotalPoolCommitmentsBN
 } from '@tracer-protocol/pools-js/types';
-
-import { calcPoolStatePreview, PoolStatePreviewInputs } from '@tracer-protocol/pools-js';
 
 import { EVENT_NAMES } from './constants';
 
@@ -137,7 +134,7 @@ export class PoolWatcher extends TypedEmitter<PoolWatcherEvents> {
         promise: async () => {
           const pendingCommitsThisInterval = await committerInstance.totalPoolCommitments(updateIntervalId);
 
-          return [this.pendingCommitsToBN(pendingCommitsThisInterval)];
+          return [pendingCommitsToBN(pendingCommitsThisInterval)];
         }
       });
     }
@@ -152,24 +149,12 @@ export class PoolWatcher extends TypedEmitter<PoolWatcherEvents> {
       pendingCommitPromises.push(attemptPromiseRecursively({
         promise: async () => {
           const pendingCommitsThisInterval = await committerInstance.totalPoolCommitments(i);
-          return this.pendingCommitsToBN(pendingCommitsThisInterval);
+          return pendingCommitsToBN(pendingCommitsThisInterval);
         }
       }));
     }
 
     return Promise.all(pendingCommitPromises);
-  }
-
-  pendingCommitsToBN (pendingCommits: TotalPoolCommitments): TotalPoolCommitmentsBN {
-    return {
-      longBurnPoolTokens: ethersBNtoBN(pendingCommits.longBurnPoolTokens),
-      longMintSettlement: ethersBNtoBN(pendingCommits.longMintSettlement),
-      longBurnShortMintPoolTokens: ethersBNtoBN(pendingCommits.longBurnShortMintPoolTokens),
-      shortBurnPoolTokens: ethersBNtoBN(pendingCommits.shortBurnPoolTokens),
-      shortMintSettlement: ethersBNtoBN(pendingCommits.shortMintSettlement),
-      shortBurnLongMintPoolTokens: ethersBNtoBN(pendingCommits.shortBurnLongMintPoolTokens),
-      updateIntervalId: ethersBNtoBN(pendingCommits.updateIntervalId)
-    };
   }
 
   async isCommitmentWindowStillOpen (updateIntervalId: number) {

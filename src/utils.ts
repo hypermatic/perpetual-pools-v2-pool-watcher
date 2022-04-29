@@ -34,10 +34,6 @@ export const attemptPromiseRecursively = async <T>({
   }
 };
 
-export const ethersBNtoBN = (ethersBN: ethers.BigNumber): BigNumber => {
-  return new BigNumber(ethersBN.toString());
-};
-
 export const poolSwapLibraryAddresses: Record<string, string> = {
   421611: '0x8e761005bAFB81CEde15366158B1F769a411dDfc'
 };
