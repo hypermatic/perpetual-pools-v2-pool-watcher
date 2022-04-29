@@ -1,4 +1,3 @@
-import { ethers } from 'ethers';
 import { BigNumber } from 'bignumber.js';
 
 // a util function to attempt a promise recursively until it resolves
@@ -32,10 +31,6 @@ export const attemptPromiseRecursively = async <T>({
       throw error;
     }
   }
-};
-
-export const ethersBNtoBN = (ethersBN: ethers.BigNumber): BigNumber => {
-  return new BigNumber(ethersBN.toString());
 };
 
 export const poolSwapLibraryAddresses: Record<string, string> = {
