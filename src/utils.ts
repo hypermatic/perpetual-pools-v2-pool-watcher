@@ -1,5 +1,6 @@
 import { ethers } from 'ethers';
 import { BigNumber } from 'bignumber.js';
+import { NETWORKS } from '@tracer-protocol/pools-js';
 
 // a util function to attempt a promise recursively until it resolves
 // this is useful to mitigate errors caused by calls to nodes failing randomly
@@ -39,7 +40,8 @@ export const ethersBNtoBN = (ethersBN: ethers.BigNumber): BigNumber => {
 };
 
 export const poolSwapLibraryAddresses: Record<string, string> = {
-  421611: '0x8e761005bAFB81CEde15366158B1F769a411dDfc'
+  [NETWORKS.ARBITRUM_RINKEBY]: '0xCB27C3813D75918f8B764143Cf3717955A5D43b8',
+  [NETWORKS.ARBITRUM]: '0x928d5a6668Bc9b801229c176c0bEB3b34Afba5d8'
 };
 
 export const movingAveragePriceTransformer = (lastPrice: BigNumber, currentPrice: BigNumber) => {
