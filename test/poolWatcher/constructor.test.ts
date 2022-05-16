@@ -35,7 +35,7 @@ describe('PoolWatcher constructor', () => {
     expect(() => new PoolWatcher({
       ...constructorDefaults,
       chainId: 'wrong'
-    })).toThrowError('unsupported chainId: wrong, supported values are [421611]');
+    })).toThrowError('unsupported chainId: wrong, supported values are [42161, 421611]');
   });
 
   test('`this.provider` is assigned a provider instance with the given node url', () => {
