@@ -1,4 +1,3 @@
-import { ethers } from 'ethers';
 import { BigNumber } from 'bignumber.js';
 import { NETWORKS } from '@tracer-protocol/pools-js';
 
@@ -33,10 +32,6 @@ export const attemptPromiseRecursively = async <T>({
       throw error;
     }
   }
-};
-
-export const ethersBNtoBN = (ethersBN: ethers.BigNumber): BigNumber => {
-  return new BigNumber(ethersBN.toString());
 };
 
 export const poolSwapLibraryAddresses: Record<string, string> = {
