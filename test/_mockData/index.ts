@@ -3,7 +3,7 @@ import { ethers } from 'ethers';
 import { jest } from '@jest/globals';
 import { TotalPoolCommitmentsBN } from '@tracer-protocol/pools-js/types';
 
-import type { LeveragedPool, PoolCommitter, PoolSwapLibrary } from '@tracer-protocol/perpetual-pools-contracts/types';
+import type { ERC20, LeveragedPool, PoolCommitter, PoolSwapLibrary } from '@tracer-protocol/perpetual-pools-contracts/types';
 import { PoolWatcher } from '../../src/PoolWatcher';
 import { PoolWatcherConstructorArgs } from '../../src/types';
 
@@ -34,6 +34,7 @@ export const getMockPendingCommits = (overrides?: Partial<TotalPoolCommitmentsBN
 
 export const expectedStateInputDefaults = {
   leverage: 3,
+  settlementTokenDecimals: 6,
   longBalance: new BigNumber('120000000000000000000000'),
   shortBalance: new BigNumber('100000000000000000000000'),
   longTokenSupply: new BigNumber('90000000000000000000000'),
@@ -53,6 +54,7 @@ export const mockPoolData = {
   poolCommitter: '0xa321c542a23f5173361f29c3809FAa74C25dAB46',
   updateInterval: 300,
   leverageAmount: '3',
+  settlementTokenDecimals: 6,
   frontRunningInterval: 30,
   settlementToken: '0x3ebDcefA6a4721a61c7BB6047fe9ca0214985798',
   longToken: '0xD43519F7D604d0c486D90d1aCE38235d432874f1',
@@ -86,12 +88,14 @@ export const getInitializedMockPoolWatcher = async ({
   mockLeveragedPoolFactory,
   mockPoolSwapLibraryFactory,
   mockPoolCommitterFactory,
+  mockERC20Factory,
   _mockPoolData
 }: {
   constructorArgs: PoolWatcherConstructorArgs,
   mockLeveragedPoolFactory: any,
   mockPoolSwapLibraryFactory: any,
   mockPoolCommitterFactory: any,
+  mockERC20Factory: any,
   _mockPoolData?: Partial<typeof mockPoolData>,
 }): Promise<PoolWatcher> => {
   const mockPoolInstance = {
@@ -128,9 +132,14 @@ export const getInitializedMockPoolWatcher = async ({
     }
   } as unknown as PoolCommitter;
 
+  const mockSettlementTokenInstance = {
+    decimals: async () => 6
+  } as unknown as ERC20;
+
   mockLeveragedPoolFactory.connect.mockReturnValueOnce(mockPoolInstance);
   mockPoolSwapLibraryFactory.connect.mockReturnValueOnce(mockPoolSwapLibraryInstance);
   mockPoolCommitterFactory.connect.mockReturnValueOnce(mockPoolCommitterInstance);
+  mockERC20Factory.connect.mockReturnValueOnce(mockSettlementTokenInstance);
 
   const poolWatcher = new PoolWatcher(constructorArgs);
 
