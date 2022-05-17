@@ -99,6 +99,10 @@ export class PoolWatcher extends TypedEmitter<PoolWatcherEvents> {
     const leverage = await attemptPromiseRecursively({
       promise: () => this.poolSwapLibrary.convertDecimalToUInt(_leverageAmount)
     });
+    const settlementTokenInstance = ERC20__factory.connect(settlementTokenAddress, this.provider);
+    const settlementTokenDecimals = await attemptPromiseRecursively({
+      promise: () => settlementTokenInstance.decimals()
+    });
 
     this.watchedPool = {
       address: this.poolAddress,
@@ -111,9 +115,10 @@ export class PoolWatcher extends TypedEmitter<PoolWatcherEvents> {
       lastPriceTimestamp: lastPriceTimestamp.toNumber(),
       longTokenInstance: ERC20__factory.connect(longTokenAddress, this.provider),
       shortTokenInstance: ERC20__factory.connect(shortTokenAddress, this.provider),
-      settlementTokenInstance: ERC20__factory.connect(settlementTokenAddress, this.provider),
       isUpdatingLastPriceTimestamp: false,
-      hasCalculatedStateThisUpdate: false
+      hasCalculatedStateThisUpdate: false,
+      settlementTokenInstance,
+      settlementTokenDecimals
     };
   }
 
@@ -345,7 +350,8 @@ export class PoolWatcher extends TypedEmitter<PoolWatcherEvents> {
           mintingFee,
           txHash: event.transactionHash,
           blockNumber: event.blockNumber,
-          timestamp: block.timestamp
+          timestamp: block.timestamp,
+          settlementTokenDecimals: this.watchedPool.settlementTokenDecimals
         });
       });
     }
