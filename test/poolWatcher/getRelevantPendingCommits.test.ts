@@ -10,7 +10,8 @@ import {
 import {
   LeveragedPool__factory,
   PoolSwapLibrary__factory,
-  PoolCommitter__factory
+  PoolCommitter__factory,
+  ERC20__factory
 } from '@tracer-protocol/perpetual-pools-contracts/types';
 
 import {
@@ -26,6 +27,7 @@ jest.mock('@tracer-protocol/perpetual-pools-contracts/types'); ;
 const mockLeveragedPoolFactory = jest.mocked(LeveragedPool__factory, true);
 const mockPoolSwapLibraryFactory = jest.mocked(PoolSwapLibrary__factory, true);
 const mockPoolCommitterFactory = jest.mocked(PoolCommitter__factory, true);
+const mockERC20Factory = jest.mocked(ERC20__factory, true);
 
 const spotOracleTransformer: PoolWatcherConstructorArgs['oraclePriceTransformer'] = (lastPrice, newPrice) => newPrice;
 
@@ -43,7 +45,8 @@ describe('PoolWatcher getRelevantPendingCommits', () => {
       },
       mockLeveragedPoolFactory,
       mockPoolSwapLibraryFactory,
-      mockPoolCommitterFactory
+      mockPoolCommitterFactory,
+      mockERC20Factory
     });
 
     const getPendingCommitsSpy = jest.spyOn(poolWatcher.watchedPool.committerInstance, 'totalPoolCommitments');
@@ -64,7 +67,8 @@ describe('PoolWatcher getRelevantPendingCommits', () => {
       },
       mockLeveragedPoolFactory,
       mockPoolSwapLibraryFactory,
-      mockPoolCommitterFactory
+      mockPoolCommitterFactory,
+      mockERC20Factory
     });
 
     const totalPoolCommitmentsSpy = jest.spyOn(poolWatcher.watchedPool.committerInstance, 'totalPoolCommitments');
@@ -92,7 +96,8 @@ describe('PoolWatcher getRelevantPendingCommits', () => {
       },
       mockLeveragedPoolFactory,
       mockPoolSwapLibraryFactory,
-      mockPoolCommitterFactory
+      mockPoolCommitterFactory,
+      mockERC20Factory
     });
 
     const totalPoolCommitmentsSpy = jest.spyOn(poolWatcher.watchedPool.committerInstance, 'totalPoolCommitments');

@@ -22,7 +22,8 @@ export type CommitEventData = {
   mintingFee: string,
   timestamp: number,
   blockNumber: number,
-  txHash: string
+  txHash: string,
+  settlementTokenDecimals: number;
 }
 
 export type UpkeepEventData = {
@@ -66,6 +67,7 @@ export type MultiplePoolWatcherConstructorArgs = {
 export type WatchedPool = {
   address: string,
   name: string,
+  settlementTokenDecimals: number,
   keeperInstance: PoolKeeper,
   updateInterval: number,
   lastPriceTimestamp: number,
