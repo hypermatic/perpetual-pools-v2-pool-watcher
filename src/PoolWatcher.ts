@@ -190,7 +190,8 @@ export class PoolWatcher extends TypedEmitter<PoolWatcherEvents> {
       longTokenSupply,
       shortTokenSupply,
       pendingLongTokenBurn,
-      pendingShortTokenBurn
+      pendingShortTokenBurn,
+      fee
     ] = await Promise.all([
       attemptPromiseRecursively({ promise: () => this.poolInstance.longBalance() }),
       attemptPromiseRecursively({ promise: () => this.poolInstance.shortBalance() }),
@@ -200,11 +201,12 @@ export class PoolWatcher extends TypedEmitter<PoolWatcherEvents> {
       attemptPromiseRecursively({ promise: () => longTokenInstance.totalSupply() }),
       attemptPromiseRecursively({ promise: () => shortTokenInstance.totalSupply() }),
       attemptPromiseRecursively({ promise: () => this.watchedPool.committerInstance.pendingLongBurnPoolTokens() }),
-      attemptPromiseRecursively({ promise: () => this.watchedPool.committerInstance.pendingShortBurnPoolTokens() })
+      attemptPromiseRecursively({ promise: () => this.watchedPool.committerInstance.pendingShortBurnPoolTokens() }),
+      attemptPromiseRecursively({ promise: () => this.poolInstance.getFee() })
     ]);
 
     return {
-      leverage,
+      leverage: new BigNumber(leverage),
       longBalance: ethersBNtoBN(longBalance),
       shortBalance: ethersBNtoBN(shortBalance),
       lastOraclePrice: ethersBNtoBN(lastOraclePrice),
@@ -214,7 +216,8 @@ export class PoolWatcher extends TypedEmitter<PoolWatcherEvents> {
       shortTokenSupply: ethersBNtoBN(shortTokenSupply),
       pendingLongTokenBurn: ethersBNtoBN(pendingLongTokenBurn),
       pendingShortTokenBurn: ethersBNtoBN(pendingShortTokenBurn),
-      oraclePriceTransformer: this.oraclePriceTransformer
+      oraclePriceTransformer: this.oraclePriceTransformer,
+      fee: ethersBNtoBN(fee, 18) // fee is always represented in decimal WAD format (1% is 0.01 * 10^18)
     };
   }
 

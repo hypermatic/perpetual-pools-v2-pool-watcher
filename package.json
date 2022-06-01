@@ -31,7 +31,7 @@
   },
   "dependencies": {
     "@tracer-protocol/perpetual-pools-contracts": "^1.2.5",
-    "@tracer-protocol/pools-js": "^3.1.6",
+    "@tracer-protocol/pools-js": "^3.1.7",
     "ethers": "5.5.1",
     "tiny-typed-emitter": "^2.1.0"
   },

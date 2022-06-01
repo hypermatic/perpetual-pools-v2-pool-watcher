@@ -27,7 +27,6 @@ export const getMockPendingCommits = (overrides?: Partial<TotalPoolCommitmentsBN
     shortBurnPoolTokens: new BigNumber(0),
     shortBurnLongMintPoolTokens: new BigNumber(0),
     longBurnShortMintPoolTokens: new BigNumber(0),
-    updateIntervalId: new BigNumber(1),
     ...overrides
   };
 };
@@ -62,22 +61,22 @@ export const mockPoolData = {
 
 export const emptyTotalPoolCommitments = () => {
   const totalPoolCommitments: any = [
-    new BigNumber(0),
-    new BigNumber(0),
-    new BigNumber(0),
-    new BigNumber(0),
-    new BigNumber(0),
-    new BigNumber(0),
-    new BigNumber(0)
+    actualEthers.BigNumber.from(0),
+    actualEthers.BigNumber.from(0),
+    actualEthers.BigNumber.from(0),
+    actualEthers.BigNumber.from(0),
+    actualEthers.BigNumber.from(0),
+    actualEthers.BigNumber.from(0),
+    actualEthers.BigNumber.from(0)
   ];
 
-  totalPoolCommitments.longMintSettlement = new BigNumber(0);
-  totalPoolCommitments.longBurnPoolTokens = new BigNumber(0);
-  totalPoolCommitments.shortMintSettlement = new BigNumber(0);
-  totalPoolCommitments.shortBurnPoolTokens = new BigNumber(0);
-  totalPoolCommitments.shortBurnLongMintPoolTokens = new BigNumber(0);
-  totalPoolCommitments.longBurnShortMintPoolTokens = new BigNumber(0);
-  totalPoolCommitments.updateIntervalId = new BigNumber(0);
+  totalPoolCommitments.longMintSettlement = actualEthers.BigNumber.from(0);
+  totalPoolCommitments.longBurnPoolTokens = actualEthers.BigNumber.from(0);
+  totalPoolCommitments.shortMintSettlement = actualEthers.BigNumber.from(0);
+  totalPoolCommitments.shortBurnPoolTokens = actualEthers.BigNumber.from(0);
+  totalPoolCommitments.shortBurnLongMintPoolTokens = actualEthers.BigNumber.from(0);
+  totalPoolCommitments.longBurnShortMintPoolTokens = actualEthers.BigNumber.from(0);
+  totalPoolCommitments.updateIntervalId = actualEthers.BigNumber.from(0);
   return totalPoolCommitments;
 };
 
