@@ -196,7 +196,7 @@ export class PoolWatcher extends TypedEmitter<PoolWatcherEvents> {
       // oracle price is always stored in WAD format
       // the sdk formats from WAD
       // format it back so that it reflects raw on chain data
-      // which aligns with expected state calculations
+      // which aligns with last oracle price that we return from getPoolStatePreviewInputs
       return spotPrice.times(new BigNumber(10).pow(18));
     } catch (error) {
       // fall back to directly fetching from pool (will be wrong for SMA but correct for spot)
