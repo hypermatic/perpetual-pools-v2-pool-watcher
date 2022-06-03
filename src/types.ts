@@ -9,6 +9,7 @@ import {
 } from '@tracer-protocol/perpetual-pools-contracts/types';
 
 import { EVENT_NAMES } from './constants';
+import { SMAOracle } from '@tracer-protocol/pools-js';
 
 export type RawCommitType = 0 | 1 | 2 | 3 | 4 | 5
 
@@ -69,6 +70,7 @@ export type WatchedPool = {
   name: string,
   settlementTokenDecimals: number,
   keeperInstance: PoolKeeper,
+  smaOracle: SMAOracle,
   updateInterval: number,
   lastPriceTimestamp: number,
   leverage: number,

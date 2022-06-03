@@ -2154,10 +2154,10 @@
   resolved "https://registry.npmjs.org/@tracer-protocol/perpetual-pools-contracts/-/perpetual-pools-contracts-1.2.5.tgz#1c579c0bfeed93791ace37ae22add118b1fc24c5"
   integrity sha512-cgE80mAr3m/khjjoU1eojhs4ZN3Miu+Gl03/zRy4mKc3dpDAVryVf1726PC9fZ1DES9uVA6/htrXH5UbuEppdQ==
 
-"@tracer-protocol/pools-js@^3.1.7":
-  version "3.1.7"
-  resolved "https://registry.npmjs.org/@tracer-protocol/pools-js/-/pools-js-3.1.7.tgz#cef9ae3b849e0445bb684ae5dfa2770581d98359"
-  integrity sha512-iqz3O1cVAAbr6ZM4Uw8zLwuTbsAzpChVPU9u9/C2+NvNml7Wc0rrzWc/gtzmsgj/m9RBL1M+cbuyHYTPFA1wxg==
+"@tracer-protocol/pools-js@^3.1.8":
+  version "3.1.8"
+  resolved "https://registry.npmjs.org/@tracer-protocol/pools-js/-/pools-js-3.1.8.tgz#3f758e65f6501620c9afe3c01f35ab23fa0c6d68"
+  integrity sha512-nm8SivdG7epAp2O2x4pka3RAtIPngVHa96vqC33J5Fl96+Js459f6iLWXx7F32pNStkkBvNxQLI1PwgII+NBfA==
   dependencies:
     "@tracer-protocol/perpetual-pools-contracts" "^1.2.5"
     bignumber.js "^9.0.1"
