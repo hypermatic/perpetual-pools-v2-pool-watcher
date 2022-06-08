@@ -5,7 +5,8 @@ import {
   pendingCommitsToBN,
   calcPoolStatePreview,
   PoolStatePreviewInputs,
-  ethersBNtoBN
+  ethersBNtoBN,
+  SMAOracle
 } from '@tracer-protocol/pools-js';
 
 // TODO: update to latest version after redeploy/abis are provided via sdk or other package
@@ -82,7 +83,8 @@ export class PoolWatcher extends TypedEmitter<PoolWatcherEvents> {
       settlementTokenAddress,
       longTokenAddress,
       shortTokenAddress,
-      lastPriceTimestamp
+      lastPriceTimestamp,
+      oracleWrapperAddress
     ] = await Promise.all([
       attemptPromiseRecursively({ promise: () => this.poolInstance.poolName() }),
       attemptPromiseRecursively({ promise: () => this.poolInstance.poolCommitter() }),
@@ -93,7 +95,8 @@ export class PoolWatcher extends TypedEmitter<PoolWatcherEvents> {
       attemptPromiseRecursively({ promise: () => this.poolInstance.settlementToken() }),
       attemptPromiseRecursively({ promise: () => this.poolInstance.tokens(0) }),
       attemptPromiseRecursively({ promise: () => this.poolInstance.tokens(1) }),
-      attemptPromiseRecursively({ promise: () => this.poolInstance.lastPriceTimestamp() })
+      attemptPromiseRecursively({ promise: () => this.poolInstance.lastPriceTimestamp() }),
+      attemptPromiseRecursively({ promise: () => this.poolInstance.oracleWrapper() })
     ]);
 
     const leverage = await attemptPromiseRecursively({
@@ -104,9 +107,15 @@ export class PoolWatcher extends TypedEmitter<PoolWatcherEvents> {
       promise: () => settlementTokenInstance.decimals()
     });
 
+    const smaOracle = await SMAOracle.Create({
+      address: oracleWrapperAddress,
+      provider: this.provider
+    });
+
     this.watchedPool = {
       address: this.poolAddress,
       committerInstance: PoolCommitter__factory.connect(committerAddress, this.provider),
+      smaOracle,
       name,
       keeperInstance: PoolKeeper__factory.connect(keeperAddress, this.provider),
       updateInterval,
@@ -179,6 +188,24 @@ export class PoolWatcher extends TypedEmitter<PoolWatcherEvents> {
     return appropriateUpdateIntervalId.eq(updateIntervalId);
   }
 
+  async getOracleSpotPrice (): Promise<BigNumber> {
+    // assume that oracle is SMA
+    try {
+      const spotPrice = await this.watchedPool.smaOracle.getSpotPrice();
+
+      // oracle price is always stored in WAD format
+      // the sdk formats from WAD
+      // format it back so that it reflects raw on chain data
+      // which aligns with last oracle price that we return from getPoolStatePreviewInputs
+      return spotPrice.times(new BigNumber(10).pow(18));
+    } catch (error) {
+      // fall back to directly fetching from pool (will be wrong for SMA but correct for spot)
+      const currentOraclePriceFromPool = await this.poolInstance.getOraclePrice();
+
+      return ethersBNtoBN(currentOraclePriceFromPool);
+    }
+  }
+
   async getPoolStatePreviewInputs (): Promise<PoolStatePreviewInputs> {
     if (!this.watchedPool.address) {
       throw new Error('getExpectedStateInput: watched pool not initialised');
@@ -200,7 +227,7 @@ export class PoolWatcher extends TypedEmitter<PoolWatcherEvents> {
     ] = await Promise.all([
       attemptPromiseRecursively({ promise: () => this.poolInstance.longBalance() }),
       attemptPromiseRecursively({ promise: () => this.poolInstance.shortBalance() }),
-      attemptPromiseRecursively({ promise: () => this.poolInstance.getOraclePrice() }),
+      attemptPromiseRecursively({ promise: () => this.getOracleSpotPrice() }),
       attemptPromiseRecursively({ promise: () => keeperInstance.executionPrice(this.poolAddress) }),
       attemptPromiseRecursively({ promise: () => this.getRelevantPendingCommits() }),
       attemptPromiseRecursively({ promise: () => longTokenInstance.totalSupply() }),
@@ -215,7 +242,7 @@ export class PoolWatcher extends TypedEmitter<PoolWatcherEvents> {
       longBalance: ethersBNtoBN(longBalance),
       shortBalance: ethersBNtoBN(shortBalance),
       lastOraclePrice: ethersBNtoBN(lastOraclePrice),
-      currentOraclePrice: ethersBNtoBN(currentOraclePrice),
+      currentOraclePrice,
       pendingCommits,
       longTokenSupply: ethersBNtoBN(longTokenSupply),
       shortTokenSupply: ethersBNtoBN(shortTokenSupply),
