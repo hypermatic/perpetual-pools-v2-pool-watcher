@@ -15,6 +15,10 @@ import {
 } from '@tracer-protocol/perpetual-pools-contracts/types';
 
 import {
+  SMAOracle
+} from '@tracer-protocol/pools-js';
+
+import {
   constructorDefaults,
   getInitializedMockPoolWatcher
 } from '../_mockData';
@@ -23,11 +27,13 @@ import { PoolWatcherConstructorArgs } from '../../src/types';
 
 jest.mock('ethers');
 jest.mock('@tracer-protocol/perpetual-pools-contracts/types'); ;
+jest.mock('@tracer-protocol/pools-js'); ;
 
 const mockLeveragedPoolFactory = jest.mocked(LeveragedPool__factory, true);
 const mockPoolSwapLibraryFactory = jest.mocked(PoolSwapLibrary__factory, true);
 const mockPoolCommitterFactory = jest.mocked(PoolCommitter__factory, true);
 const mockERC20Factory = jest.mocked(ERC20__factory, true);
+const mockSMAOracle = jest.mocked(SMAOracle, true);
 
 const spotOracleTransformer: PoolWatcherConstructorArgs['oraclePriceTransformer'] = (lastPrice, newPrice) => newPrice;
 
@@ -46,7 +52,8 @@ describe('PoolWatcher getRelevantPendingCommits', () => {
       mockLeveragedPoolFactory,
       mockPoolSwapLibraryFactory,
       mockPoolCommitterFactory,
-      mockERC20Factory
+      mockERC20Factory,
+      mockSMAOracle
     });
 
     const getPendingCommitsSpy = jest.spyOn(poolWatcher.watchedPool.committerInstance, 'totalPoolCommitments');
@@ -68,7 +75,8 @@ describe('PoolWatcher getRelevantPendingCommits', () => {
       mockLeveragedPoolFactory,
       mockPoolSwapLibraryFactory,
       mockPoolCommitterFactory,
-      mockERC20Factory
+      mockERC20Factory,
+      mockSMAOracle
     });
 
     const totalPoolCommitmentsSpy = jest.spyOn(poolWatcher.watchedPool.committerInstance, 'totalPoolCommitments');
@@ -97,7 +105,8 @@ describe('PoolWatcher getRelevantPendingCommits', () => {
       mockLeveragedPoolFactory,
       mockPoolSwapLibraryFactory,
       mockPoolCommitterFactory,
-      mockERC20Factory
+      mockERC20Factory,
+      mockSMAOracle
     });
 
     const totalPoolCommitmentsSpy = jest.spyOn(poolWatcher.watchedPool.committerInstance, 'totalPoolCommitments');

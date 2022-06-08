@@ -88,6 +88,7 @@ export const getInitializedMockPoolWatcher = async ({
   mockPoolSwapLibraryFactory,
   mockPoolCommitterFactory,
   mockERC20Factory,
+  mockSMAOracle,
   _mockPoolData
 }: {
   constructorArgs: PoolWatcherConstructorArgs,
@@ -95,11 +96,13 @@ export const getInitializedMockPoolWatcher = async ({
   mockPoolSwapLibraryFactory: any,
   mockPoolCommitterFactory: any,
   mockERC20Factory: any,
+  mockSMAOracle: any,
   _mockPoolData?: Partial<typeof mockPoolData>,
 }): Promise<PoolWatcher> => {
   const mockPoolInstance = {
     poolName: async () => _mockPoolData?.poolName || mockPoolData.poolName,
     keeper: async () => _mockPoolData?.keeper || mockPoolData.keeper,
+    oracleWrapper: async () => _mockPoolData?.oracleWrapper || mockPoolData.oracleWrapper,
     poolCommitter: async () => _mockPoolData?.poolCommitter || mockPoolData.poolCommitter,
     updateInterval: async () => _mockPoolData?.updateInterval || mockPoolData.updateInterval,
     leverageAmount: async () => _mockPoolData?.leverageAmount || mockPoolData.leverageAmount,
@@ -139,6 +142,7 @@ export const getInitializedMockPoolWatcher = async ({
   mockPoolSwapLibraryFactory.connect.mockReturnValueOnce(mockPoolSwapLibraryInstance);
   mockPoolCommitterFactory.connect.mockReturnValueOnce(mockPoolCommitterInstance);
   mockERC20Factory.connect.mockReturnValueOnce(mockSettlementTokenInstance);
+  mockSMAOracle.Create.mockReturnValueOnce({});
 
   const poolWatcher = new PoolWatcher(constructorArgs);
 
